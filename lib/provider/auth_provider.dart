@@ -1,0 +1,45 @@
+import 'package:erp_solution/models/user_model.dart';
+import 'package:erp_solution/service/auth_service.dart';
+import 'package:erp_solution/service/token_service.dart';
+import 'package:flutter/material.dart';
+
+class AuthProvider with ChangeNotifier {
+  final AuthService _authService;
+
+  AuthProvider(this._authService);
+
+  UserModel? _user;
+
+  UserModel? get user => _user;
+
+  bool _isLoading = false;
+
+  bool get isLoading => _isLoading;
+
+  bool get isLoggedIn => _user != null;
+
+  // Login method
+
+  Future<void> login(String username, String password) async {
+    try {
+      _isLoading = true;
+      notifyListeners();
+
+      _user = await _authService.login(username: username, password: password);
+
+      notifyListeners();
+    } catch (e) {
+      rethrow;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Logout method
+  Future<void> logout() async {
+    _user = null;
+    await TokenService().clearToken();
+    notifyListeners();
+  }
+}
