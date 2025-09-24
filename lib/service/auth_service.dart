@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:erp_solution/models/user_model.dart';
 import 'package:erp_solution/service/api_service.dart';
 import 'package:erp_solution/service/token_service.dart';
+import 'package:erp_solution/service/user_storage_service.dart';
 import 'package:erp_solution/utils/api_end_points.dart';
 
 class AuthService {
@@ -29,7 +30,9 @@ class AuthService {
 
         if (token != null && token.isNotEmpty) {
           await TokenService().saveToken(token);
+          await UserStorageService().saveUser(userModel);
         }
+
         return userModel;
       } else {
         final errorMessage =

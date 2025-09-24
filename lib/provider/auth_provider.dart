@@ -1,6 +1,8 @@
 import 'package:erp_solution/models/user_model.dart';
 import 'package:erp_solution/service/auth_service.dart';
 import 'package:erp_solution/service/token_service.dart';
+import 'package:erp_solution/service/user_storage_service.dart';
+import 'package:erp_solution/utils/jwt_decoder.dart';
 import 'package:flutter/material.dart';
 
 class AuthProvider with ChangeNotifier {
@@ -18,8 +20,21 @@ class AuthProvider with ChangeNotifier {
 
   bool get isLoggedIn => _user != null;
 
-  // Login method
+  Future<void> init() async {
+    final token = await TokenService().loadToken();
+    final savedUser = await UserStorageService().loadUser();
 
+    if (token != null && token.isNotEmpty) {
+      //  check JWT expiration
+      if (JWTDecoder.isValid(token)) {
+        _user = savedUser;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  // Login method
   Future<void> login(String username, String password) async {
     try {
       _isLoading = true;

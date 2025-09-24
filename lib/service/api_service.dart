@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:erp_solution/service/token_service.dart';
 import 'package:erp_solution/utils/api_end_points.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
@@ -17,36 +18,17 @@ class ApiService {
   String? refreshToken;
 
   // for no separate token refresh api
-  void init() {
+  Future<void> init() async {
+    // 1. Load token first
+    final savedToken = await TokenService().loadToken();
+    if (savedToken != null && savedToken.isNotEmpty) {
+      accessToken = savedToken;
+      print(" Loaded saved token: $accessToken");
+    }
+
     dio.interceptors.clear();
-    dio.interceptors.add(
-      InterceptorsWrapper(
-        onRequest: (options, handler) {
-          if (accessToken != null &&
-              !options.path.contains(ApiEndPoints.loginApi)) {
-            options.headers["Authorization"] = "Bearer $accessToken";
-          }
-          return handler.next(options);
-        },
-        onError: (DioException e, handler) async {
-          if (e.response?.statusCode == 401) {
-            // No refresh API available → force logout
-            // Example: clear tokens and redirect to login
 
-            accessToken = null;
-            refreshToken = null;
-
-            // notify Provider here to trigger logout
-            // e.g., authProvider.logout();
-            return handler.reject(e);
-          }
-          return handler.next(e);
-        },
-      ),
-    );
-
-    // LogInterceptor to see Api Logs
-
+    // 2. Add logger FIRST
     dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,
@@ -54,8 +36,31 @@ class ApiService {
         responseBody: true,
         responseHeader: true,
         error: true,
-        compact: false, // set to false for multi-line JSON
-        maxWidth: 120, // controls line wrap
+        compact: false,
+        maxWidth: 120,
+      ),
+    );
+
+    // 3. Then add auth wrapper AFTER logger
+    dio.interceptors.add(
+      InterceptorsWrapper(
+        onRequest: (options, handler) {
+          if (accessToken != null &&
+              !options.path.contains(ApiEndPoints.loginApi)) {
+            options.headers["Authorization"] = "Bearer $accessToken";
+            print(" Added Authorization header");
+          }
+          return handler.next(options);
+        },
+        onError: (DioException e, handler) async {
+          if (e.response?.statusCode == 401) {
+            accessToken = null;
+            refreshToken = null;
+            print("Token expired, clearing tokens...");
+            return handler.reject(e);
+          }
+          return handler.next(e);
+        },
       ),
     );
   }

@@ -8,6 +8,7 @@ class TokenService {
 
   Future<String> loadToken() async {
     String token = '';
+    print("tookennnnn loadToken");
     SharedPreferences pref = await SharedPreferences.getInstance();
     if (pref.getString("token") != null) {
       token = pref.getString("token")!;
