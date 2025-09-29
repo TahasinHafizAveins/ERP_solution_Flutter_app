@@ -2,10 +2,10 @@ import 'package:erp_solution/nav_screens/bottom_nav_bar.dart';
 import 'package:erp_solution/nav_screens/drawer_menu_bar.dart';
 import 'package:erp_solution/nav_screens/top_menu_bar.dart';
 import 'package:erp_solution/provider/attendance_summery_provider.dart';
+import 'package:erp_solution/screens/attendance/self_details.dart';
+import 'package:erp_solution/screens/attendance/team_mem_details.dart';
+import 'package:erp_solution/screens/attendance/user_attendence_summery.dart';
 import 'package:erp_solution/screens/employee_directory.dart';
-import 'package:erp_solution/screens/self_details.dart';
-import 'package:erp_solution/screens/team_mem_details.dart';
-import 'package:erp_solution/screens/user_attendence_summery.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 

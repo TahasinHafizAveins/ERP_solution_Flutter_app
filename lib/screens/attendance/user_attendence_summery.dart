@@ -1,5 +1,5 @@
 import 'package:erp_solution/models/attendance_summery_result_model.dart';
-import 'package:erp_solution/screens/attendance_charts.dart';
+import 'package:erp_solution/screens/attendance/attendance_charts.dart';
 import 'package:erp_solution/utils/widget_extensions.dart';
 import 'package:flutter/material.dart';
 

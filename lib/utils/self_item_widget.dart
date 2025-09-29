@@ -1,4 +1,5 @@
 import 'package:erp_solution/models/attendance_summery_result_model.dart';
+import 'package:erp_solution/utils/color_widget.dart';
 import 'package:erp_solution/utils/self_row_widget.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +34,7 @@ class SelfItemWidget extends StatelessWidget {
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 12),
             decoration: BoxDecoration(
-              color: _getBackgroundColor(status),
+              color: ColorWidget.getStatusColor(status),
               borderRadius: const BorderRadius.vertical(
                 top: Radius.circular(8), // match card top radius
               ),
@@ -102,18 +103,5 @@ class SelfItemWidget extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  Color _getBackgroundColor(String status) {
-    switch (status) {
-      case "Late":
-        return Colors.red;
-      case "Present":
-        return Colors.green;
-      case "Absent":
-        return Colors.grey;
-      default:
-        return Colors.blue; // fallback color
-    }
   }
 }
