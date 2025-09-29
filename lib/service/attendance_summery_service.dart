@@ -11,7 +11,6 @@ class AttendanceSummeryService {
 
   Future<AttendanceSummeryModel> fetchAttendanceSummary() async {
     try {
-      print("hello function called..");
       final response = await apiService.dio.get(
         ApiEndPoints.attendanceSummaryApi,
         options: Options(
