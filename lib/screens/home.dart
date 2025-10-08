@@ -3,9 +3,10 @@ import 'package:erp_solution/nav_screens/drawer_menu_bar.dart';
 import 'package:erp_solution/nav_screens/top_menu_bar.dart';
 import 'package:erp_solution/provider/attendance_summery_provider.dart';
 import 'package:erp_solution/screens/attendance/self_details.dart';
-import 'package:erp_solution/screens/attendance/team_mem_details.dart';
 import 'package:erp_solution/screens/attendance/user_attendence_summery.dart';
-import 'package:erp_solution/screens/employee_directory.dart';
+import 'package:erp_solution/screens/employee_dir/employee_directory.dart';
+import 'package:erp_solution/screens/shimmer_screens/attendance_shimmer.dart';
+import 'package:erp_solution/screens/team_attendance/team_mem_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -25,6 +26,10 @@ class _HomeState extends State<Home> {
       _selectedIndex = index;
       _overridePage = null;
     });
+
+    if (index == 0) {
+      _fetchAttendanceSummery(); // Re-fetch when Home is selected
+    }
   }
 
   @override
@@ -40,8 +45,11 @@ class _HomeState extends State<Home> {
     return Consumer<AttendanceSummeryProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
+          return Scaffold(
+            appBar: AppBar(
+              title: const Text('ERP Solution', textAlign: TextAlign.start),
+            ),
+            body: const AttendanceShimmer(),
           );
         }
         if (provider.error != null) {
@@ -72,7 +80,6 @@ class _HomeState extends State<Home> {
         ];
 
         final page = _overridePage ?? pages[_selectedIndex];
-        ;
 
         return Scaffold(
           appBar: AppBar(

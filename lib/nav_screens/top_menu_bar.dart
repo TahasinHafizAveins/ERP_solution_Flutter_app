@@ -11,7 +11,7 @@ class TopMenuBar extends StatelessWidget {
           onPressed: () {},
           icon: const Icon(Icons.notifications_active),
         ),
-        PopupMenuButton<String>(
+        /*PopupMenuButton<String>(
           icon: const Icon(Icons.more_vert_outlined),
           itemBuilder: (context) => [
             PopupMenuItem(
@@ -55,7 +55,7 @@ class TopMenuBar extends StatelessWidget {
               ),
             ),
           ],
-        ),
+        ),*/
       ],
     );
   }

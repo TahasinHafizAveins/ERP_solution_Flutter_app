@@ -145,9 +145,6 @@ class _AttendanceChartsState extends State<AttendanceCharts> {
                     sections: List.generate(values.length, (i) {
                       final value = values[i].toDouble();
                       final sectionValue = value == 0 ? 0.001 : value;
-
-                      print("Aveins ******#### Touched index: $touchedIndex");
-                      print("Aveins ****** section index: $i");
                       final isTouched = i == touchedIndex;
                       final radius = isTouched ? scWidth / 10 : scWidth / 11;
                       // Combine count + label

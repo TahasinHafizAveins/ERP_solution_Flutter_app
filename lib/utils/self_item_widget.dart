@@ -61,43 +61,57 @@ class SelfItemWidget extends StatelessWidget {
           // 🔹 Body content
           Padding(
             padding: const EdgeInsets.all(12.0),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Expanded(
-                  child: Column(
+            child: Builder(
+              builder: (context) {
+                if (status.toLowerCase() == "holiday") {
+                  //only show holiday reason
+                  return Center(
+                    child: SelfRowWidget(
+                      label: "Holiday Reason",
+                      value: getValue("DAY_STATUS"),
+                    ),
+                  );
+                } else {
+                  return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      SelfRowWidget(
-                        label: "In Time",
-                        value: getValue("OfficeInTime"),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SelfRowWidget(
+                              label: "In Time",
+                              value: getValue("OfficeInTime"),
+                            ),
+                            SizedBox(height: 8),
+                            SelfRowWidget(
+                              label: "Work Hour",
+                              value: getValue("WORK_HOUR"),
+                            ),
+                          ],
+                        ),
                       ),
-                      SizedBox(height: 8),
-                      SelfRowWidget(
-                        label: "Work Hour",
-                        value: getValue("WORK_HOUR"),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SelfRowWidget(
+                              label: "Out Time",
+                              value: getValue("OfficeOutTime"),
+                            ),
+                            SizedBox(height: 8),
+                            SelfRowWidget(
+                              label: "Day Status",
+                              value: getValue("DAY_STATUS"),
+                            ),
+                          ],
+                        ),
                       ),
                     ],
-                  ),
-                ),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      SelfRowWidget(
-                        label: "Out Time",
-                        value: getValue("OfficeOutTime"),
-                      ),
-                      SizedBox(height: 8),
-                      SelfRowWidget(
-                        label: "Day Status",
-                        value: getValue("DAY_STATUS"),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
+                  );
+                }
+              },
             ),
           ),
         ],

@@ -32,8 +32,19 @@ class _TeamMemDetailsState extends State<TeamMemDetails> {
             child: ListView.builder(
               itemCount: teamDetailsList.length,
               itemBuilder: (context, index) {
-                return TeamMemberListItem(
-                  teamDetail: teamDetailsList[index].cells ?? [],
+                final teamDetail = teamDetailsList[index].cells ?? [];
+                String id = teamDetailsList[index].id ?? "";
+                return InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  splashColor: Colors.red.withValues(alpha: 0.2),
+                  onTap: () {
+                    Navigator.pushNamed(
+                      context,
+                      '/selected_member_details',
+                      arguments: {'id': id, 'teamDetail': teamDetail},
+                    );
+                  },
+                  child: TeamMemberListItem(teamDetail: teamDetail),
                 );
               },
             ),

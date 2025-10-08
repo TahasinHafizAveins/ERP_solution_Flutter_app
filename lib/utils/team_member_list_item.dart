@@ -1,32 +1,28 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:erp_solution/models/attendance_summery_result_model.dart';
 import 'package:erp_solution/utils/api_end_points.dart';
 import 'package:erp_solution/utils/color_widget.dart';
+import 'package:erp_solution/utils/common_utils.dart';
 import 'package:flutter/material.dart';
+import 'package:shimmer/shimmer.dart';
 
 class TeamMemberListItem extends StatelessWidget {
   final List<Cells> teamDetail;
   const TeamMemberListItem({super.key, required this.teamDetail});
 
-  String getValue(String id) {
-    return teamDetail
-            .firstWhere(
-              (cell) => cell.id == id,
-              orElse: () => Cells(value: "-"),
-            )
-            .value ??
-        "-";
-  }
-
   @override
   Widget build(BuildContext context) {
     // Extract values using helper
-    final String name = getValue("FullName");
-    final String designation = getValue("DesignationName");
-    final String status = getValue("ATTENDANCE_STATUS");
-    final String inTime = getValue("IN_TIME");
-    final String outTime = getValue("OUT_TIME");
+    final String name = CommonUtils.getValue(teamDetail, "FullName");
+    final String designation = CommonUtils.getValue(
+      teamDetail,
+      "DesignationName",
+    );
+    final String status = CommonUtils.getValue(teamDetail, "ATTENDANCE_STATUS");
+    final String inTime = CommonUtils.getValue(teamDetail, "IN_TIME");
+    final String outTime = CommonUtils.getValue(teamDetail, "OUT_TIME");
     final String imageUrl =
-        "${ApiEndPoints.base}${ApiEndPoints.imageApi}${getValue("avatar")}"; // Placeholder image path
+        "${ApiEndPoints.base}${ApiEndPoints.imageApi}${CommonUtils.getValue(teamDetail, "avatar")}"; // Placeholder image path
 
     return Card(
       elevation: 4,
@@ -53,10 +49,22 @@ class TeamMemberListItem extends StatelessWidget {
                 width: 60,
                 height: 60,
                 color: Colors.transparent, // fallback background
-                child: Image.network(
-                  imageUrl,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
                   fit: BoxFit.contain, // keeps the full image inside circle
-                  errorBuilder: (context, error, stackTrace) {
+                  placeholder: (context, url) => Shimmer.fromColors(
+                    baseColor: Colors.grey.shade300,
+                    highlightColor: Colors.grey.shade100,
+                    child: Container(
+                      width: 60,
+                      height: 60,
+                      decoration: const BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  errorWidget: (context, error, stackTrace) {
                     return const Icon(
                       Icons.person,
                       size: 40,

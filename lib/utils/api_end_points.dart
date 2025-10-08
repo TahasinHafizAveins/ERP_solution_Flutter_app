@@ -4,4 +4,8 @@ class ApiEndPoints {
   static const String imageApi = "/Security/";
   static const String attendanceSummaryApi =
       "/HRMS/Attendance/GetAttendanceWidgets/0";
+  static const String employeeDirectoryApi =
+      "/HRMS/Employee/GetAllEmployeeDirectory";
+  static const String teamMemAttendanceDetailsApi =
+      "/HRMS/Attendance/getSelfAttendanceWidget/";
 }

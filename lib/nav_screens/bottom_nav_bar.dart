@@ -31,7 +31,7 @@ class BottomNavBar extends StatelessWidget {
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.group),
-          label: 'Team Member Details',
+          label: 'Team Members',
           backgroundColor: Colors.black87,
         ),
         BottomNavigationBarItem(
