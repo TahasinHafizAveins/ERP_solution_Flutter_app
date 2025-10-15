@@ -31,6 +31,8 @@ class AuthService {
         if (token != null && token.isNotEmpty) {
           await TokenService().saveToken(token);
           await UserStorageService().saveUser(userModel);
+
+          apiService.accessToken = token; //Update apiService with the new token
         }
 
         return userModel;

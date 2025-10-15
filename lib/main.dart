@@ -1,6 +1,7 @@
 import 'package:erp_solution/provider/attendance_summery_provider.dart';
 import 'package:erp_solution/provider/auth_provider.dart';
 import 'package:erp_solution/provider/employee_dir_provider.dart';
+import 'package:erp_solution/provider/notification_provider.dart';
 import 'package:erp_solution/provider/team_mem_attendance_details_provider.dart';
 import 'package:erp_solution/screens/employee_dir/employee_details.dart';
 import 'package:erp_solution/screens/home.dart';
@@ -10,6 +11,7 @@ import 'package:erp_solution/service/api_service.dart';
 import 'package:erp_solution/service/attendance_summery_service.dart';
 import 'package:erp_solution/service/auth_service.dart';
 import 'package:erp_solution/service/employee_dir_service.dart';
+import 'package:erp_solution/service/notifications_service.dart';
 import 'package:erp_solution/service/team_mem_attendance_details_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -37,6 +39,9 @@ void main() async {
             TeamMemAttendanceDetailsService(apiService),
           ),
         ),
+        ChangeNotifierProvider(
+          create: (_) => NotificationProvider(NotificationsService(apiService)),
+        ),
       ],
       child: const HomePage(),
     ),
@@ -58,10 +63,20 @@ class HomePage extends StatelessWidget {
         '/employee_details': (context) => const EmployeeDetails(),
       },
       // Initial screen: use Consumer to decide
-      home: Consumer<AuthProvider>(
-        builder: (context, auth, _) {
-          return auth.isLoggedIn ? const Home() : const Login();
-          //return const Home();
+      home: FutureBuilder(
+        future: context.read<AuthProvider>().init(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Scaffold(
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
+          return Consumer<AuthProvider>(
+            builder: (context, auth, _) {
+              return auth.isLoggedIn ? const Home() : const Login();
+              //return const Home();
+            },
+          );
         },
       ),
     );

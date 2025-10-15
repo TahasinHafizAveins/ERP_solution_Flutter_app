@@ -1,3 +1,5 @@
+import 'package:erp_solution/models/menu_model.dart';
+
 class UserResult {
   int? logedID;
   int? userID;
@@ -24,6 +26,7 @@ class UserResult {
   String? changePasswordDatetime;
   String? lockedDateTime;
   bool? isLocked;
+  Menus? menus;
   int? reasonID;
   String? message;
   String? settings;
@@ -57,6 +60,7 @@ class UserResult {
     this.changePasswordDatetime,
     this.lockedDateTime,
     this.isLocked,
+    this.menus,
     this.reasonID,
     this.message,
     this.settings,
@@ -91,6 +95,7 @@ class UserResult {
     changePasswordDatetime = json['ChangePasswordDatetime'];
     lockedDateTime = json['LockedDateTime'];
     isLocked = json['IsLocked'];
+    menus = json['menus'] != null ? Menus.fromJson(json['menus']) : null;
     reasonID = json['ReasonID'];
     message = json['Message'];
     settings = json['Settings'];
@@ -126,6 +131,9 @@ class UserResult {
     data['ChangePasswordDatetime'] = changePasswordDatetime;
     data['LockedDateTime'] = lockedDateTime;
     data['IsLocked'] = isLocked;
+    if (menus != null) {
+      data['menus'] = menus!.toJson();
+    }
     data['ReasonID'] = reasonID;
     data['Message'] = message;
     data['Settings'] = settings;

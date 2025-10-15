@@ -1,3 +1,4 @@
+import 'package:erp_solution/nav_screens/notifications.dart';
 import 'package:flutter/material.dart';
 
 class TopMenuBar extends StatelessWidget {
@@ -8,7 +9,12 @@ class TopMenuBar extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const Notifications()),
+            );
+          },
           icon: const Icon(Icons.notifications_active),
         ),
         /*PopupMenuButton<String>(

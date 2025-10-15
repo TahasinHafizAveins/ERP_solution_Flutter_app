@@ -11,7 +11,11 @@ class ApiService {
   ApiService._internal();
 
   final Dio dio = Dio(
-    BaseOptions(baseUrl: "https://nagaderp.mynagad.com:7070"),
+    BaseOptions(
+      baseUrl: "https://nagaderp.mynagad.com:7070",
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 30),
+    ),
   );
 
   String? accessToken;
@@ -19,16 +23,10 @@ class ApiService {
 
   // for no separate token refresh api
   Future<void> init() async {
-    // 1. Load token first
-    final savedToken = await TokenService().loadToken();
-    if (savedToken != null && savedToken.isNotEmpty) {
-      accessToken = savedToken;
-      print(" Loaded saved token: $accessToken");
-    }
-
+    // Clear existing interceptors
     dio.interceptors.clear();
 
-    // 2. Add logger FIRST
+    // 1. Add logger FIRST
     dio.interceptors.add(
       PrettyDioLogger(
         requestHeader: true,
@@ -41,28 +39,49 @@ class ApiService {
       ),
     );
 
-    // 3. Then add auth wrapper AFTER logger
+    // 2. Then add auth interceptor
     dio.interceptors.add(
       InterceptorsWrapper(
-        onRequest: (options, handler) {
+        onRequest: (options, handler) async {
+          // ✅ Load token fresh each time to ensure it's current
+          if (accessToken == null) {
+            final savedToken = await TokenService().loadToken();
+            if (savedToken != null && savedToken.isNotEmpty) {
+              accessToken = savedToken;
+              print("Loaded token in interceptor: $accessToken");
+            }
+          }
+
           if (accessToken != null &&
+              accessToken!.isNotEmpty &&
               !options.path.contains(ApiEndPoints.loginApi)) {
             options.headers["Authorization"] = "Bearer $accessToken";
-            print(" Added Authorization header");
+            print("Added Authorization header with token");
+          } else {
+            print("No token available for request to: ${options.path}");
           }
+
           return handler.next(options);
         },
         onError: (DioException e, handler) async {
+          print("Dio Error: ${e.message}, Status: ${e.response?.statusCode}");
+
           if (e.response?.statusCode == 401) {
+            print("Token expired or invalid, clearing...");
             accessToken = null;
-            refreshToken = null;
-            print("Token expired, clearing tokens...");
-            return handler.reject(e);
+            await TokenService().clearToken();
+            // You might want to navigate to login here
           }
           return handler.next(e);
         },
       ),
     );
+  }
+
+  // Method to update token from outside
+  void setToken(String token) {
+    accessToken = token;
+    print("Token updated in ApiService: $token");
   }
 
   /*

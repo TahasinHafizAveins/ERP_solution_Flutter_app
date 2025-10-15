@@ -9,29 +9,41 @@ class AuthProvider with ChangeNotifier {
   final AuthService _authService;
 
   AuthProvider(this._authService);
-
   UserModel? _user;
+  bool _isLoading = false;
+  bool _initialized = false;
 
   UserModel? get user => _user;
-
-  bool _isLoading = false;
-
   bool get isLoading => _isLoading;
-
   bool get isLoggedIn => _user != null;
 
   Future<void> init() async {
-    final token = await TokenService().loadToken();
-    final savedUser = await UserStorageService().loadUser();
+    if (_initialized) return;
 
-    if (token != null && token.isNotEmpty) {
-      //  check JWT expiration
-      if (JWTDecoder.isValid(token)) {
-        _user = savedUser;
+    try {
+      _isLoading = true;
+      notifyListeners();
+      final token = await TokenService().loadToken();
+      final savedUser = await UserStorageService().loadUser();
+
+      if (token != null && token.isNotEmpty) {
+        //  check JWT expiration
+        if (JWTDecoder.isValid(token)) {
+          _user = savedUser;
+          // Update ApiService with the loaded token
+          _authService.apiService.setToken(token);
+        } else {
+          await logout();
+        }
       }
-    }
 
-    notifyListeners();
+      _initialized = true;
+    } catch (e) {
+      print("Error during auth init: $e");
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
   }
 
   // Login method
@@ -54,7 +66,10 @@ class AuthProvider with ChangeNotifier {
   // Logout method
   Future<void> logout() async {
     _user = null;
+    _initialized = false;
     await TokenService().clearToken();
+    await UserStorageService().clearUser();
+    _authService.apiService.accessToken = null;
     notifyListeners();
   }
 }

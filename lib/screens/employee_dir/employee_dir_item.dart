@@ -131,13 +131,4 @@ class EmployeeDirItem extends StatelessWidget {
       ),
     );
   }
-
-  ImageProvider<Object>? getImage(String? s) {
-    if (s == null || s.isEmpty) return null;
-    try {
-      return NetworkImage("${ApiEndPoints.base}${ApiEndPoints.imageApi}$s");
-    } catch (_) {
-      return null;
-    }
-  }
 }

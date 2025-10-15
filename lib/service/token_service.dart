@@ -1,23 +1,35 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
 class TokenService {
+  static const String _tokenKey = "token";
+
   Future<void> saveToken(String token) async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    await pref.setString("token", token);
+    try {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      await pref.setString(_tokenKey, token);
+    } catch (e) {
+      print(e);
+    }
   }
 
-  Future<String> loadToken() async {
-    String token = '';
-    print("tookennnnn loadToken");
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    if (pref.getString("token") != null) {
-      token = pref.getString("token")!;
+  Future<String?> loadToken() async {
+    try {
+      SharedPreferences pref = await SharedPreferences.getInstance();
+      final token = pref.getString(_tokenKey) ?? "";
+      return token;
+    } catch (e) {
+      print(e);
+      return null;
     }
-    return token;
   }
 
   Future<void> clearToken() async {
-    SharedPreferences pref = await SharedPreferences.getInstance();
-    await pref.clear();
+    try {
+      final SharedPreferences pref = await SharedPreferences.getInstance();
+      await pref.remove(_tokenKey);
+      print("Token cleared");
+    } catch (e) {
+      print("Error clearing token: $e");
+    }
   }
 }
