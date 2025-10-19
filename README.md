@@ -1,4 +1,4 @@
-# erp_solution
+# ERP solution
 A modern Flutter-based ERP application built to streamline internal business operations — including **Dashboard, Notifications, Attendance**, and **HR Management**.  
 Designed for internal company use with secure API communication and modular architecture.
 
