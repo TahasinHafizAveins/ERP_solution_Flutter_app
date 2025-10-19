@@ -50,7 +50,7 @@ lib/
 ---
 
 
-🚀 Getting Started
+##🚀 Getting Started
 
 Prerequisites
 Flutter SDK 3.0+
@@ -60,7 +60,7 @@ Company API access (authentication token required)
 
 Installation
 
-git clone https://github.com/your-org/erp_solution.git
+git clone [https://github.com/your-org/erp_solution.git](https://github.com/TahasinHafizAveins/ERP_solution_Flutter_app.git)
 cd erp_solution
 flutter pub get
 flutter run
