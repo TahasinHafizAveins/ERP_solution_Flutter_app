@@ -50,7 +50,7 @@ lib/
 ---
 
 
-##🚀 Getting Started
+## 🚀 Getting Started
 
 Prerequisites
 Flutter SDK 3.0+
