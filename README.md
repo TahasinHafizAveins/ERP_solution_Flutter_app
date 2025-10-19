@@ -92,9 +92,9 @@ final response = await dio.get(
 
  - Prerequisites
 
-  --- Flutter SDK 3.0+
-  --- Android Studio / VS Code
-  --- Company API access (authentication token required)
+  - Flutter SDK 3.0+
+  - Android Studio / VS Code
+  - Company API access (authentication token required)
  
  - Installation
 ```
