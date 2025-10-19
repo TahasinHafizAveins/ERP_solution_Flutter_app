@@ -96,12 +96,4 @@ Keep modules independent for easier scalability.
 This project is proprietary and intended for internal company use only.
 Unauthorized distribution, copying, or external deployment is strictly prohibited.
 
----
-
-Would you like me to turn this into a **GitHub premium-looking README** — with:
-- badges (Flutter | Dart | Provider | Dio)
-- company logo or banner placeholder  
-- neat color formatting for better GitHub visuals?
-
-It’ll make your repo look **professional and portfolio-ready**, even if it’s private.
 
