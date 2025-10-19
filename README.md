@@ -50,6 +50,20 @@ lib/
 ---
 
 
+## 🔌 API Configuration
+
+All HTTP requests are handled via the **Dio** client, centralized in the `HttpHelper` class.  
+Includes token-based authentication, interceptors, and error handling.
+
+```dart
+final response = await dio.get(
+  'https://your-company-api.com/api/endpoint',
+  options: Options(headers: {'Authorization': 'Bearer $token'}),
+);
+```
+
+---
+
 ## 🚀 Getting Started
 
 Prerequisites
