@@ -1,10 +1,12 @@
 import 'package:erp_solution/nav_screens/bottom_nav_bar.dart';
 import 'package:erp_solution/nav_screens/drawer_menu_bar.dart';
+import 'package:erp_solution/nav_screens/notifications.dart';
 import 'package:erp_solution/nav_screens/top_menu_bar.dart';
 import 'package:erp_solution/provider/attendance_summery_provider.dart';
 import 'package:erp_solution/screens/attendance/self_details.dart';
 import 'package:erp_solution/screens/attendance/user_attendence_summery.dart';
 import 'package:erp_solution/screens/employee_dir/employee_directory.dart';
+import 'package:erp_solution/screens/remote_attendance/remote_attendance.dart';
 import 'package:erp_solution/screens/shimmer_screens/attendance_shimmer.dart';
 import 'package:erp_solution/screens/team_attendance/team_mem_details.dart';
 import 'package:flutter/material.dart';
@@ -32,6 +34,75 @@ class _HomeState extends State<Home> {
     }
   }
 
+  //  Handle drawer menu selection
+  void _onDrawerMenuItemSelected(int menuId) {
+    // Handle specific menu items
+    switch (menuId) {
+      case 25: // Replace with actual Remote Attendance menu ID from your JSON
+        _openRemoteAttendance();
+        break;
+      case 124: // Replace with other menu IDs as needed
+        _openOtherPage();
+        break;
+      case 163: // Replace with other menu IDs as needed
+        _setEmployeeDirectoryAsCurrentPage();
+        break;
+      case 63: // Replace with other menu IDs as needed
+        _openTopMenu();
+        break;
+      case 6: // Replace with other menu IDs as needed
+        _openHome();
+        break;
+
+      default:
+        // For unknown menu IDs, you can show a message or ignore
+        debugPrint('Unknown menu ID: $menuId');
+        break;
+    }
+  }
+
+  void _openRemoteAttendance() {
+    // Navigate to Remote Attendance page
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) =>
+            const RemoteAttendance(), // Your remote attendance page
+      ),
+    );
+  }
+
+  void _setEmployeeDirectoryAsCurrentPage() {
+    setState(() {
+      _overridePage = EmployeeDirectory(); // Use a different widget
+      _selectedIndex = -1;
+    });
+  }
+
+  void _openHome() {
+    setState(() {
+      //_overridePage = const Home();
+      //_selectedIndex = -1;
+    });
+  }
+
+  void _openTopMenu() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Notifications()),
+    );
+  }
+
+  void _openOtherPage() {
+    // Handle other menu items
+    // You can add more navigation logic here for other menu items
+    //Navigator.pop(context); // Just close the drawer
+    // Or show a dialog/snackbar instead of navigating
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Feature coming soon!')));
+  }
+
   @override
   void initState() {
     // TODO: implement initState
@@ -47,7 +118,7 @@ class _HomeState extends State<Home> {
         if (provider.isLoading) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('ERP Solution', textAlign: TextAlign.start),
+              title: const Text('Nagad ERP', textAlign: TextAlign.start),
             ),
             body: const AttendanceShimmer(),
           );
@@ -79,31 +150,27 @@ class _HomeState extends State<Home> {
           const EmployeeDirectory(),
         ];
 
-        final page = _overridePage ?? pages[_selectedIndex];
+        // Determine which page to show
+        final Widget page;
+        if (_overridePage != null) {
+          page = _overridePage!;
+        } else {
+          page = pages[_selectedIndex];
+        }
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('ERP Solution', textAlign: TextAlign.start),
+            title: const Text('Nagad ERP', textAlign: TextAlign.start),
             actions: const [TopMenuBar()],
           ),
-          drawer: DrawerMenuBar(onSelectedItem: _onNavItemTapped),
+          drawer: DrawerMenuBar(onSelectedItem: _onDrawerMenuItemSelected),
           body: page,
-          bottomNavigationBar: BottomNavBar(
-            selectedIndex: _selectedIndex,
-            onItemTapped: _onNavItemTapped,
-          ),
-        );
-        Scaffold(
-          appBar: AppBar(
-            title: const Text('ERP Solution', textAlign: TextAlign.start),
-            actions: const [TopMenuBar()],
-          ),
-          drawer: DrawerMenuBar(onSelectedItem: _onNavItemTapped),
-          body: page,
-          bottomNavigationBar: BottomNavBar(
-            selectedIndex: _selectedIndex,
-            onItemTapped: _onNavItemTapped,
-          ),
+          bottomNavigationBar: _overridePage == null
+              ? BottomNavBar(
+                  selectedIndex: _selectedIndex,
+                  onItemTapped: _onNavItemTapped,
+                )
+              : null,
         );
       },
     );

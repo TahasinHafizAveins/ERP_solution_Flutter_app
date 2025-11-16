@@ -40,20 +40,23 @@ class SelfItemWidget extends StatelessWidget {
               ),
             ),
             child: Center(
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "$date ($day)",
-                    style: const TextStyle(color: Colors.white, fontSize: 14),
-                  ),
-                  SizedBox(width: 10),
-                  Text(
-                    status,
-                    style: TextStyle(color: Colors.white, fontSize: 18),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      "$date ($day)",
+                      style: const TextStyle(color: Colors.white, fontSize: 14),
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      status,
+                      style: TextStyle(color: Colors.white, fontSize: 18),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),

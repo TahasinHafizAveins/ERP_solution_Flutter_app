@@ -1,8 +1,9 @@
 import 'package:erp_solution/provider/employee_dir_provider.dart';
 import 'package:erp_solution/screens/employee_dir/employee_dir_item.dart';
-import 'package:erp_solution/screens/shimmer_screens/employee_dir_shimmer.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
+import '../shimmer_screens/employee_dir_shimmer.dart';
 
 class EmployeeDirectory extends StatefulWidget {
   const EmployeeDirectory({super.key});
@@ -27,7 +28,9 @@ class _EmployeeDirectoryState extends State<EmployeeDirectory> {
     super.initState();
     Future.microtask(() {
       final provider = Provider.of<EmployeeDirProvider>(context, listen: false);
-      provider.loadEmployeeDir();
+      if (provider.employees.isEmpty && !provider.isLoading) {
+        provider.loadEmployeeDir();
+      }
     });
   }
 
@@ -36,7 +39,7 @@ class _EmployeeDirectoryState extends State<EmployeeDirectory> {
     return Consumer<EmployeeDirProvider>(
       builder: (context, provider, _) {
         if (provider.isLoading) {
-          return Scaffold(body: EmployeeDirShimmer());
+          return const EmployeeDirShimmer();
         }
         if (provider.error != null) {
           return Center(child: Text('Error: ${provider.error}'));

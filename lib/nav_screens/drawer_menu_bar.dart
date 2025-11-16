@@ -34,7 +34,7 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
       width: MediaQuery.of(context).size.width * 0.93,
       child: Column(
         children: [
-          //  Profile header
+          // Profile header
           Container(
             color: Colors.transparent,
             child: Column(
@@ -57,7 +57,9 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
                       ),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
+                          color: Colors.black.withOpacity(
+                            0.2,
+                          ), // FIX: Changed from withValues to withOpacity
                           blurRadius: 8,
                           offset: const Offset(0, 4),
                         ),
@@ -95,9 +97,10 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
                                 fontSize: 14,
                               ),
                             ),
-                            SizedBox(width: 10),
+                            const SizedBox(width: 10), // FIX: Added const
                             Text(
-                              user?.employeeCode.toString() ?? "..",
+                              user?.employeeCode?.toString() ??
+                                  "..", // FIX: Added null check
                               style: GoogleFonts.poppins(
                                 color: Colors.white70,
                                 fontSize: 14,
@@ -133,7 +136,7 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
                             ),
                             const SizedBox(width: 12),
                             ElevatedButton.icon(
-                              onPressed: () => debugPrint("Logout tapped"),
+                              onPressed: () => _logout(context),
                               icon: const Icon(Icons.logout, size: 16),
                               label: Text(
                                 "Logout",
@@ -165,10 +168,9 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
 
           // Dynamic menu list
           Expanded(
-            child: ListView.separated(
-              padding: EdgeInsets.zero,
+            child: ListView.builder(
+              padding: const EdgeInsets.all(8.0), // FIX: Added const
               itemCount: displayMenus.length,
-              separatorBuilder: (_, __) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 return _buildMenuItem(displayMenus[index]);
               },
@@ -191,19 +193,22 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
     List<MenuResult> allMenus, {
     int parentId = 0,
   }) {
-    return allMenus.where((menu) => menu.parentID == parentId).map((menu) {
-      final children = buildMenuTree(allMenus, parentId: menu.menuID ?? 0);
-      return MenuResult(
-        menuID: menu.menuID,
-        parentID: menu.parentID,
-        title: menu.title,
-        type: menu.type,
-        icon: menu.icon,
-        url: menu.url,
-        // 👇 attach children dynamically
-        children: children.isNotEmpty ? children : null,
-      );
-    }).toList();
+    return allMenus
+        .where((menu) => menu.parentID == parentId && menu.target == "app")
+        .map((menu) {
+          final children = buildMenuTree(allMenus, parentId: menu.menuID ?? 0);
+          return MenuResult(
+            menuID: menu.menuID,
+            parentID: menu.parentID,
+            title: menu.title,
+            type: menu.type,
+            icon: menu.icon,
+            url: menu.url,
+            // 👇 attach children dynamically
+            children: children.isNotEmpty ? children : null,
+          );
+        })
+        .toList();
   }
 
   Widget _buildMenuItem(MenuResult menu, {int depth = 0}) {
@@ -213,20 +218,22 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
     final isExpanded = _expanded[menuId] ?? false;
     final isSelected = key == _selectedMenuKey;
 
-    IconData iconData =
-        Icons.circle; // map your menu.icon -> IconData if needed
+    IconData iconData = Icons.circle;
 
-    // header tile with premium styling
     final header = AnimatedContainer(
       duration: const Duration(milliseconds: 220),
-      margin: EdgeInsets.only(left: depth * 14.0, right: 14, top: 6, bottom: 6),
+      margin: EdgeInsets.only(left: depth * 14.0, right: 2, top: 6, bottom: 6),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(14),
         gradient: isSelected
             ? LinearGradient(
                 colors: [
-                  Colors.red.shade700.withOpacity(0.95),
-                  Colors.red.shade400.withOpacity(0.9),
+                  Colors.red.shade700.withOpacity(
+                    0.95,
+                  ), // FIX: Changed from withValues to withOpacity
+                  Colors.red.shade400.withOpacity(
+                    0.9,
+                  ), // FIX: Changed from withValues to withOpacity
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -236,8 +243,12 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
         boxShadow: [
           BoxShadow(
             color: isSelected
-                ? Colors.red.shade700.withOpacity(0.15)
-                : Colors.black.withOpacity(0.03),
+                ? Colors.red.shade700.withOpacity(
+                    0.15,
+                  ) // FIX: Changed from withValues to withOpacity
+                : Colors.black.withOpacity(
+                    0.03,
+                  ), // FIX: Changed from withValues to withOpacity
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -247,20 +258,33 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
         borderRadius: BorderRadius.circular(14),
         onTap: () {
           if (hasChildren) {
-            // toggle expansion on parent
             setState(() => _expanded[menuId] = !isExpanded);
           } else {
-            // select leaf item
+            // Handle menu item selection
             setState(() => _selectedMenuKey = key);
-            Navigator.pop(context);
-            widget.onSelectedItem(menu.menuID ?? 0);
+
+            final selectedMenuId = menu.menuID ?? 0;
+            if (selectedMenuId == 25 ||
+                selectedMenuId == 163 ||
+                selectedMenuId == 63 ||
+                selectedMenuId == 6) {
+              // FIX: Use a small delay to ensure drawer closes properly before callback
+              Future.delayed(const Duration(milliseconds: 100), () {
+                Navigator.pop(context); // Close drawer
+                widget.onSelectedItem(selectedMenuId); // Trigger callback
+              });
+            } else {
+              Navigator.pop(context);
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Feature coming soon!')),
+              );
+            }
           }
         },
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
           child: Row(
             children: [
-              // icon
               AnimatedContainer(
                 duration: const Duration(milliseconds: 220),
                 width: 36,
@@ -275,10 +299,7 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
                   color: isSelected ? Colors.red.shade700 : Colors.red.shade300,
                 ),
               ),
-
               const SizedBox(width: 12),
-
-              // title & optional subtitle (badge etc.)
               Expanded(
                 child: Text(
                   menu.title ?? '',
@@ -290,11 +311,9 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
-
-              // badge or chevron
               if (hasChildren)
                 AnimatedRotation(
-                  turns: isExpanded ? 0.25 : 0.0, // rotate 90deg when expanded
+                  turns: isExpanded ? 0.25 : 0.0,
                   duration: const Duration(milliseconds: 220),
                   child: Icon(
                     Icons.chevron_right_rounded,
@@ -327,14 +346,11 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
       ),
     );
 
-    // if no children just return the header
     if (!hasChildren) return header;
 
-    // if has children, render header + animated children list
     return Column(
       children: [
         header,
-        // Animated container for children: shows/hides with a height animation
         AnimatedCrossFade(
           firstChild: const SizedBox.shrink(),
           secondChild: Padding(
@@ -352,5 +368,10 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
         ),
       ],
     );
+  }
+
+  void _logout(BuildContext context) {
+    context.read<AuthProvider>().logout();
+    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }

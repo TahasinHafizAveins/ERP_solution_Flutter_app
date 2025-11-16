@@ -96,7 +96,7 @@ class _NotificationsState extends State<Notifications> {
           ),
           body: Column(
             children: [
-              // 🔍 Smart search + filter row
+              // Smart search + filter row
               Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
@@ -163,7 +163,7 @@ class _NotificationsState extends State<Notifications> {
                 ),
               ),
 
-              // 📰 Notifications list
+              // Notifications list
               Expanded(
                 child: filterList.isEmpty
                     ? Center(

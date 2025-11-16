@@ -47,7 +47,7 @@ class _LoginState extends State<Login> {
                         children: <Widget>[
                           Center(
                             child: Image.asset(
-                              'assets/logo.png',
+                              'assets/logo_bg_white.png',
                               height: 100,
                               width: 300,
                               fit: BoxFit.cover,
@@ -60,7 +60,7 @@ class _LoginState extends State<Login> {
                           ),
                           SizedBox(height: 10),
                           Text(
-                            "Welcome to ERP Solution",
+                            "Welcome to Nagad",
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                         ],
@@ -239,8 +239,10 @@ class _LoginState extends State<Login> {
   }
 
   Future<void> loginUser() async {
-    String username = "Kayser"; //_emailController.text;
-    String password = "Sep@2025k@yser"; // _passwordController.text;
+    String username =
+        _emailController.text; // "231051"; //"Kayser"; //_emailController.text;
+    String password = _passwordController.text;
+    // "Sadia#OCT#25"; //"Sep@2025k@yser"; // _passwordController.text;
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Please enter both username and password")),
