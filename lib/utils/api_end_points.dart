@@ -16,6 +16,8 @@ class ApiEndPoints {
   ///Attendance
   static const String attendanceSummaryApi =
       "/HRMS/Attendance/GetAttendanceWidgets/0";
+  static const String getAttendanceBarChartApi =
+      "/HRMS/Attendance/GetEmployeeAttendanceSummaryBarchart/0";
   static const String teamMemAttendanceDetailsApi =
       "/HRMS/Attendance/getSelfAttendanceWidget/";
 

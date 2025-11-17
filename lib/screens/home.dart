@@ -75,15 +75,18 @@ class _HomeState extends State<Home> {
   void _setEmployeeDirectoryAsCurrentPage() {
     setState(() {
       _overridePage = EmployeeDirectory(); // Use a different widget
-      _selectedIndex = -1;
+      _selectedIndex = 3;
     });
   }
 
   void _openHome() {
     setState(() {
-      //_overridePage = const Home();
-      //_selectedIndex = -1;
+      _overridePage = null; // Clear any override page
+      _selectedIndex = 0; // Set to first tab (Home/Attendance)
     });
+
+    // Optionally refresh home data
+    _fetchAttendanceSummery();
   }
 
   void _openTopMenu() {
@@ -136,6 +139,7 @@ class _HomeState extends State<Home> {
             summeryModel: provider.summery?.result?.firstWhere(
               (result) => result.id == 'DoughnutWidget',
             ),
+            attendanceBarChartModel: provider.barChart,
           ),
           SelfDetails(
             selfDetails: provider.summery?.result?.firstWhere(
@@ -165,12 +169,10 @@ class _HomeState extends State<Home> {
           ),
           drawer: DrawerMenuBar(onSelectedItem: _onDrawerMenuItemSelected),
           body: page,
-          bottomNavigationBar: _overridePage == null
-              ? BottomNavBar(
-                  selectedIndex: _selectedIndex,
-                  onItemTapped: _onNavItemTapped,
-                )
-              : null,
+          bottomNavigationBar: BottomNavBar(
+            selectedIndex: _selectedIndex,
+            onItemTapped: _onNavItemTapped,
+          ),
         );
       },
     );
@@ -182,5 +184,6 @@ class _HomeState extends State<Home> {
       listen: false,
     );
     provider.loadAttendanceSummery();
+    provider.loadAttendanceBarChart();
   }
 }

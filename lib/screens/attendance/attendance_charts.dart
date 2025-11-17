@@ -1,3 +1,4 @@
+import 'package:erp_solution/models/attendance_bar_chart_model.dart';
 import 'package:erp_solution/models/attendance_summery_result_model.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
@@ -5,11 +6,13 @@ import 'package:flutter/material.dart';
 class AttendanceCharts extends StatefulWidget {
   final String selectedDuration;
   final Result? attendanceResult;
+  final AttendanceBarChartModel? attendanceBarChartModel;
 
   const AttendanceCharts({
     super.key,
     required this.selectedDuration,
     required this.attendanceResult,
+    required this.attendanceBarChartModel,
   });
 
   @override
