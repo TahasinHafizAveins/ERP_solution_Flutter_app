@@ -372,6 +372,5 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
 
   void _logout(BuildContext context) {
     context.read<AuthProvider>().logout();
-    Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
   }
 }

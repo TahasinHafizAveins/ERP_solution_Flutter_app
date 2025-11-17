@@ -20,7 +20,6 @@ class UserAttendanceSummery extends StatefulWidget {
 
 class _UserAttendanceSummeryState extends State<UserAttendanceSummery> {
   int selectedIndex = 0;
-
   @override
   Widget build(BuildContext context) {
     final Map<String, String> summaryDurations = {

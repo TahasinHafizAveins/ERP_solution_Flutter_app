@@ -247,18 +247,19 @@ class _LoginState extends State<Login> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text("Please enter both username and password")),
       );
-    } else {
-      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      return;
+    }
 
-      try {
-        await authProvider.login(username, password);
-      } catch (e) {
-        if (!mounted) return; // widget disposed → stop
+    final authProvider = Provider.of<AuthProvider>(context, listen: false);
 
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("Login failed: $e")));
-      }
+    try {
+      await authProvider.login(username, password);
+    } catch (e) {
+      if (!mounted) return; // widget disposed → stop
+
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("Login failed: $e")));
     }
   }
 }

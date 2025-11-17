@@ -70,6 +70,7 @@ class AuthProvider with ChangeNotifier {
     await TokenService().clearToken();
     await UserStorageService().clearUser();
     _authService.apiService.accessToken = null;
+    _authService.apiService.refreshToken = null;
     notifyListeners();
   }
 }

@@ -47,18 +47,18 @@ class AttendanceSummeryService {
         options: Options(
           sendTimeout: const Duration(seconds: 10),
           receiveTimeout: const Duration(seconds: 10),
-          responseType: ResponseType.plain, // force plain text
+          responseType: ResponseType.plain,
         ),
       );
 
-      final responseBody = json.decode(response.data)['Result'];
-      if (responseBody["Result"] != null) {
-        return AttendanceBarChartModel.fromJson(responseBody[0]);
-      } else {
-        final errorMessage =
-            responseBody['Message'] ?? "Failed to load summary";
-        throw Exception(errorMessage);
+      final decodedResponse = json.decode(response.data);
+      final resultArray = decodedResponse['Result'] as List?;
+
+      if (resultArray == null || resultArray.isEmpty) {
+        throw Exception(decodedResponse['Message'] ?? "No data available");
       }
+
+      return AttendanceBarChartModel.fromJson(resultArray[0]);
     } on DioException catch (e) {
       throw Exception(
         "Fetch failed: ${e.response?.data ?? e.message ?? "Unknown error"}",
