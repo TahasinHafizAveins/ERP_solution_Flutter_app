@@ -12,7 +12,7 @@ import 'package:erp_solution/service/api_service.dart';
 import 'package:erp_solution/service/attendance_summery_service.dart';
 import 'package:erp_solution/service/auth_service.dart';
 import 'package:erp_solution/service/employee_dir_service.dart';
-import 'package:erp_solution/service/notifications_service.dart';
+import 'package:erp_solution/service/notifications_list_service.dart';
 import 'package:erp_solution/service/remote_attendance_service.dart';
 import 'package:erp_solution/service/team_mem_attendance_details_service.dart';
 import 'package:flutter/material.dart';
@@ -42,7 +42,8 @@ void main() async {
           ),
         ),
         ChangeNotifierProvider(
-          create: (_) => NotificationProvider(NotificationsService(apiService)),
+          create: (_) =>
+              NotificationProvider(NotificationsListService(apiService)),
         ),
         ChangeNotifierProvider(
           create: (_) =>

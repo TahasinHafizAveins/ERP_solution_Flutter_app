@@ -605,19 +605,44 @@ class _AttendanceChartsState extends State<AttendanceCharts> {
     List<Datasets> datasets,
   ) {
     return List.generate(labels.length, (index) {
-      final bars = List.generate(datasets.length, (datasetIndex) {
-        final data = datasets[datasetIndex].data ?? [];
-        final value = index < data.length ? data[index] : 0;
+      final actualWorkHour = datasets[0].data?[index] ?? 0;
+      final expectedWorkHour = datasets[1].data?[index] ?? 0;
 
-        return BarChartRodData(
-          toY: value.toDouble(),
-          color: _getBarChartColor(datasetIndex),
-          width: 12,
-          borderRadius: BorderRadius.circular(4),
-        );
-      });
+      // Determine which value is shorter
+      final isActualShorter = actualWorkHour <= expectedWorkHour;
+      final shorterValue = isActualShorter ? actualWorkHour : expectedWorkHour;
+      final longerValue = isActualShorter ? expectedWorkHour : actualWorkHour;
 
-      return BarChartGroupData(x: index, groupVertically: true, barRods: bars);
+      return BarChartGroupData(
+        x: index,
+        groupVertically: true,
+        barRods: [
+          // Longer bar first (goes to back)
+          BarChartRodData(
+            toY: longerValue.toDouble(),
+            color: isActualShorter
+                ? _barChartColors[1] // Expected - lighter when behind
+                : _barChartColors[0], // Actual - lighter when behind
+            width: 14, // Wider bar for background
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
+          ),
+          // Shorter bar second (comes to front)
+          BarChartRodData(
+            toY: shorterValue.toDouble(),
+            color: isActualShorter
+                ? _barChartColors[0] // Actual - solid color when in front
+                : _barChartColors[1], // Expected - solid color when in front
+            width: 8, // Narrower bar for foreground
+            borderRadius: const BorderRadius.only(
+              topLeft: Radius.circular(4),
+              topRight: Radius.circular(4),
+            ),
+          ),
+        ],
+      );
     });
   }
 

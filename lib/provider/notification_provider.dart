@@ -1,10 +1,10 @@
 import 'package:erp_solution/models/notification_model.dart';
 import 'package:erp_solution/models/notification_type_model.dart';
-import 'package:erp_solution/service/notifications_service.dart';
+import 'package:erp_solution/service/notifications_list_service.dart';
 import 'package:flutter/cupertino.dart';
 
 class NotificationProvider with ChangeNotifier {
-  final NotificationsService service;
+  final NotificationsListService service;
   NotificationProvider(this.service);
 
   bool _isLoading = false;

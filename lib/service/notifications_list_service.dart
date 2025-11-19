@@ -4,9 +4,9 @@ import 'package:erp_solution/models/notification_type_model.dart';
 import 'package:erp_solution/service/api_service.dart';
 import 'package:erp_solution/utils/api_end_points.dart';
 
-class NotificationsService {
+class NotificationsListService {
   final ApiService apiService;
-  NotificationsService(this.apiService);
+  NotificationsListService(this.apiService);
 
   Future<List<NotificationModel>> fetchNotifications() async {
     try {
