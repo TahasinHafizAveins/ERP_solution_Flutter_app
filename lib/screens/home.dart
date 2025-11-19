@@ -121,7 +121,10 @@ class _HomeState extends State<Home> {
         if (provider.isLoading) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Nagad ERP', textAlign: TextAlign.start),
+              title: const Text(
+                'Nagad People &amp; Culture',
+                textAlign: TextAlign.start,
+              ),
             ),
             body: const AttendanceShimmer(),
           );
@@ -164,7 +167,10 @@ class _HomeState extends State<Home> {
 
         return Scaffold(
           appBar: AppBar(
-            title: const Text('Nagad ERP', textAlign: TextAlign.start),
+            title: const Text(
+              'Nagad People &amp; Culture',
+              textAlign: TextAlign.start,
+            ),
             actions: const [TopMenuBar()],
           ),
           drawer: DrawerMenuBar(onSelectedItem: _onDrawerMenuItemSelected),
