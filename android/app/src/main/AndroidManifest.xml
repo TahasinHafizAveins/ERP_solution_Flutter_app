@@ -3,7 +3,7 @@
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.INTERNET"/>
     <application
-        android:label="Nagad ERP"
+        android:label="Nagad People &amp; Culture"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity
