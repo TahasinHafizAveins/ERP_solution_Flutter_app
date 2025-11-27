@@ -267,7 +267,8 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
             if (selectedMenuId == 25 ||
                 selectedMenuId == 163 ||
                 selectedMenuId == 63 ||
-                selectedMenuId == 6) {
+                selectedMenuId == 6 ||
+                selectedMenuId == 54) {
               // FIX: Use a small delay to ensure drawer closes properly before callback
               Future.delayed(const Duration(milliseconds: 100), () {
                 Navigator.pop(context); // Close drawer

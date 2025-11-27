@@ -239,9 +239,9 @@ class _LoginState extends State<Login> {
   }
 
   Future<void> loginUser() async {
-    String username =
-        "231051"; // "231051"; //"Kayser"; //_emailController.text;
-    String password = "Sadia#OCT#25";
+    String username = _emailController.text;
+    // "231051"; //"Kayser"; //_emailController.text;
+    String password = _passwordController.text;
     // "Sadia#OCT#25"; //"Sep@2025k@yser"; // _passwordController.text;
     if (username.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(

@@ -17,6 +17,8 @@ class AuthProvider with ChangeNotifier {
   bool get isLoading => _isLoading;
   bool get isLoggedIn => _user != null;
 
+  String? get authToken => _authService.apiService.accessToken;
+
   Future<void> init() async {
     if (_initialized) return;
 

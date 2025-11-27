@@ -35,4 +35,17 @@ class ApiEndPoints {
   static const String districtsByDivisionApi =
       "/security/combo/GetDistrictsByDivision/";
   static const String thanaByDistrictApi = "/security/combo/GetThanas/";
+
+  ///Leave Management
+  static const String selfLeaveApplicationListApi =
+      "/HRMS/Leave/GetLeaveApplicationList";
+  static const String allLeaveApplicationListApi =
+      "/HRMS/Leave/GetAllLeaveApplicationList";
+
+  static const String submitLeaveApplication =
+      "/HRMS/Leave/CreateLeaveApplication";
+  static const String getApprovalList = "/Approval/APView/GetAPViews";
+  static const String getLeaveBalanceDetails =
+      "/HRMS/Leave/GetLeaveBalanceAndDetails/";
+  static const String getBackupEmp = "/HRMS/Combo/GetBackupEmployees";
 }

@@ -6,6 +6,7 @@ import 'package:erp_solution/provider/attendance_summery_provider.dart';
 import 'package:erp_solution/screens/attendance/self_details.dart';
 import 'package:erp_solution/screens/attendance/user_attendence_summery.dart';
 import 'package:erp_solution/screens/employee_dir/employee_directory.dart';
+import 'package:erp_solution/screens/leave_management/self_leave_application_list.dart';
 import 'package:erp_solution/screens/remote_attendance/remote_attendance.dart';
 import 'package:erp_solution/screens/shimmer_screens/attendance_shimmer.dart';
 import 'package:erp_solution/screens/team_attendance/team_mem_details.dart';
@@ -48,10 +49,13 @@ class _HomeState extends State<Home> {
         _setEmployeeDirectoryAsCurrentPage();
         break;
       case 63: // Replace with other menu IDs as needed
-        _openTopMenu();
+        _openNotification();
         break;
       case 6: // Replace with other menu IDs as needed
         _openHome();
+        break;
+      case 54: // Replace with other menu IDs as needed
+        _openSelfLeaveApplicationList();
         break;
 
       default:
@@ -59,6 +63,13 @@ class _HomeState extends State<Home> {
         debugPrint('Unknown menu ID: $menuId');
         break;
     }
+  }
+
+  void _openSelfLeaveApplicationList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const SelfLeaveApplicationList()),
+    );
   }
 
   void _openRemoteAttendance() {
@@ -89,7 +100,7 @@ class _HomeState extends State<Home> {
     _fetchAttendanceSummery();
   }
 
-  void _openTopMenu() {
+  void _openNotification() {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const Notifications()),
@@ -122,7 +133,7 @@ class _HomeState extends State<Home> {
           return Scaffold(
             appBar: AppBar(
               title: const Text(
-                'Nagad People &amp; Culture',
+                'Nagad People & Culture',
                 textAlign: TextAlign.start,
               ),
             ),
@@ -168,7 +179,7 @@ class _HomeState extends State<Home> {
         return Scaffold(
           appBar: AppBar(
             title: const Text(
-              'Nagad People &amp; Culture',
+              'Nagad People & Culture',
               textAlign: TextAlign.start,
             ),
             actions: const [TopMenuBar()],
