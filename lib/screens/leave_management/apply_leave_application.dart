@@ -295,51 +295,53 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
           borderRadius: BorderRadius.vertical(bottom: Radius.circular(20)),
         ),
       ),
-      body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Colors.red.shade50, Colors.grey.shade50],
+      body: GestureDetector(
+        onTap: () {
+          // Dismiss keyboard when tapping outside text fields
+          FocusScope.of(context).unfocus();
+        },
+        behavior: HitTestBehavior.opaque,
+        child: Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Colors.red.shade50, Colors.grey.shade50],
+            ),
           ),
-        ),
-        child: Consumer<LeaveManagementProvider>(
-          builder: (context, provider, child) {
-            return Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: ListView(
-                  children: [
-                    // Leave Balance at the top
-                    _buildLeaveBalanceButton(),
-                    const SizedBox(height: 16),
-
-                    _buildLeaveTypeField(provider),
-                    const SizedBox(height: 16),
-                    _buildLeaveDatesField(),
-                    const SizedBox(height: 16),
-
-                    // Leave Days Breakdown below Leave Dates
-                    if (_leaveDays.isNotEmpty) ...[
-                      _buildLeaveDaysList(),
+          child: Consumer<LeaveManagementProvider>(
+            builder: (context, provider, child) {
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Form(
+                  key: _formKey,
+                  child: ListView(
+                    children: [
+                      _buildLeaveBalanceButton(),
                       const SizedBox(height: 16),
+                      _buildLeaveTypeField(provider),
+                      const SizedBox(height: 16),
+                      _buildLeaveDatesField(),
+                      const SizedBox(height: 16),
+                      if (_leaveDays.isNotEmpty) ...[
+                        _buildLeaveDaysList(),
+                        const SizedBox(height: 16),
+                      ],
+                      _buildPurposeField(),
+                      const SizedBox(height: 16),
+                      _buildBackupEmployeeField(provider),
+                      const SizedBox(height: 16),
+                      _buildStayDuringLeaveField(),
+                      const SizedBox(height: 16),
+                      _buildAttachmentsSection(),
+                      const SizedBox(height: 24),
+                      _buildSubmitButton(),
                     ],
-
-                    _buildPurposeField(),
-                    const SizedBox(height: 16),
-                    _buildBackupEmployeeField(provider),
-                    const SizedBox(height: 16),
-                    _buildStayDuringLeaveField(),
-                    const SizedBox(height: 16),
-                    _buildAttachmentsSection(),
-                    const SizedBox(height: 24),
-                    _buildSubmitButton(),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
       ),
     );
