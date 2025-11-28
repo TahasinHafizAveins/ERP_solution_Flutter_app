@@ -23,7 +23,8 @@ class PieChartAttendance extends StatefulWidget {
   State<PieChartAttendance> createState() => _PieChartAttendanceState();
 }
 
-class _PieChartAttendanceState extends State<PieChartAttendance> {
+class _PieChartAttendanceState extends State<PieChartAttendance>
+    with SingleTickerProviderStateMixin {
   static const List<String> _fixedLabels = [
     'On Time',
     'Late',
@@ -41,6 +42,50 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
     Color(0xFF9C27B0), // Holiday & Weekend
     Color(0xFF26A69A), // Partial Entry
   ];
+
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimation();
+  }
+
+  void _initializeAnimation() {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1500),
+    );
+
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    );
+
+    // Start animation after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animationController.forward();
+    });
+  }
+
+  @override
+  void didUpdateWidget(PieChartAttendance oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Restart animation when selectedDuration changes
+    if (oldWidget.selectedDuration != widget.selectedDuration ||
+        oldWidget.attendanceResult != widget.attendanceResult) {
+      _animationController.reset();
+      _animationController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -87,38 +132,41 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
 
     return Column(
       children: [
-        SizedBox(
-          width: widget.scWidth,
-          height: widget.scWidth * 0.45, // Full circle space
-          child: CustomPaint(
-            painter: StackedProgressArcPainter(
-              values: counts,
-              maxValue: maxDays,
-              colors: _fixedColors,
-              strokeWidth: widget.scWidth * 0.0095,
-              gap: widget.scWidth * 0.008,
-            ),
-            child: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // const Text(
-                  //   "Total Analytics",
-                  //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  // ),
-                  const SizedBox(height: 40),
-                  Text(
-                    _centerSubtitle(widget.selectedDuration),
-                    style: const TextStyle(fontSize: 13, color: Colors.grey),
+        AnimatedBuilder(
+          animation: _animation,
+          builder: (context, child) {
+            return SizedBox(
+              width: widget.scWidth,
+              height: widget.scWidth * 0.45,
+              child: CustomPaint(
+                painter: StackedProgressArcPainter(
+                  values: counts,
+                  maxValue: maxDays,
+                  colors: _fixedColors,
+                  strokeWidth: widget.scWidth * 0.0095,
+                  gap: widget.scWidth * 0.008,
+                  animationValue: _animation.value,
+                ),
+                child: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const SizedBox(height: 40),
+                      Text(
+                        _centerSubtitle(widget.selectedDuration),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
-
         const SizedBox(height: 14),
-
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Wrap(
@@ -206,6 +254,7 @@ class StackedProgressArcPainter extends CustomPainter {
   final List<Color> colors;
   final double strokeWidth;
   final double gap;
+  final double animationValue;
 
   StackedProgressArcPainter({
     required this.values,
@@ -213,6 +262,7 @@ class StackedProgressArcPainter extends CustomPainter {
     required this.colors,
     required this.strokeWidth,
     required this.gap,
+    required this.animationValue,
   });
 
   @override
@@ -230,27 +280,33 @@ class StackedProgressArcPainter extends CustomPainter {
 
       final rect = Rect.fromCircle(center: center, radius: r);
 
-      final bg = Paint()
+      // Draw background arc
+      final bgPaint = Paint()
         ..color = Colors.grey.withOpacity(0.12)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
 
-      canvas.drawArc(rect, startAngle, arcSweep, false, bg);
+      canvas.drawArc(rect, startAngle, arcSweep, false, bgPaint);
 
+      // Draw animated foreground arc
       final percent = (values[i] / maxValue).clamp(0.0, 1.0);
-      final sweep = arcSweep * percent;
+      final sweep = arcSweep * percent * animationValue;
 
-      final fg = Paint()
+      final fgPaint = Paint()
         ..color = colors[i]
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
         ..strokeCap = StrokeCap.round;
 
-      canvas.drawArc(rect, startAngle, sweep, false, fg);
+      canvas.drawArc(rect, startAngle, sweep, false, fgPaint);
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+  bool shouldRepaint(covariant StackedProgressArcPainter oldDelegate) {
+    return oldDelegate.animationValue != animationValue ||
+        oldDelegate.values != values ||
+        oldDelegate.maxValue != maxValue;
+  }
 }

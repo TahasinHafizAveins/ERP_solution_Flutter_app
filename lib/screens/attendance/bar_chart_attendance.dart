@@ -20,7 +20,8 @@ class BarChartAttendance extends StatefulWidget {
   State<BarChartAttendance> createState() => _BarChartAttendanceState();
 }
 
-class _BarChartAttendanceState extends State<BarChartAttendance> {
+class _BarChartAttendanceState extends State<BarChartAttendance>
+    with SingleTickerProviderStateMixin {
   // New color scheme for bar chart
   final List<Color> _barChartColors = [
     const Color(0xFF4CAF50), // Green for Actual Work Hour
@@ -31,6 +32,50 @@ class _BarChartAttendanceState extends State<BarChartAttendance> {
     const Color(0xFF66BB6A), // Light Green
     const Color(0xFFFFB74D), // Light Orange
   ];
+
+  late AnimationController _animationController;
+  late Animation<double> _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeAnimation();
+  }
+
+  void _initializeAnimation() {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _animation = CurvedAnimation(
+      parent: _animationController,
+      curve: Curves.easeOutCubic,
+    );
+
+    // Start animation after build
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _animationController.forward();
+    });
+  }
+
+  @override
+  void didUpdateWidget(BarChartAttendance oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    // Restart animation when selectedDuration changes
+    if (oldWidget.selectedDuration != widget.selectedDuration ||
+        oldWidget.attendanceBarChartModel != widget.attendanceBarChartModel) {
+      _animationController.reset();
+      _animationController.forward();
+    }
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -67,82 +112,87 @@ class _BarChartAttendanceState extends State<BarChartAttendance> {
 
           SizedBox(
             height: 300, // Fixed height for bar chart
-            child: BarChart(
-              BarChartData(
-                alignment: BarChartAlignment.spaceBetween,
-                maxY: _getMaxYValue(datasets),
-                barTouchData: BarTouchData(
-                  enabled: true,
-                  touchTooltipData: BarTouchTooltipData(
-                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                      final datasetLabel = datasets[rodIndex].label ?? '';
-                      return BarTooltipItem(
-                        '$datasetLabel: ${rod.toY.toStringAsFixed(2)}h',
-                        const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                titlesData: FlTitlesData(
-                  show: true,
-                  bottomTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        final index = value.toInt();
-                        if (index >= 0 && index < labels.length) {
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(
-                              _formatLabelForDisplay(
-                                labels[index],
-                                labels.length,
-                              ),
-                              style: const TextStyle(
-                                fontSize: 10,
-                                color: Colors.grey,
-                              ),
-                              textAlign: TextAlign.center,
+            child: AnimatedBuilder(
+              animation: _animation,
+              builder: (context, child) {
+                return BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceBetween,
+                    maxY: _getMaxYValue(datasets),
+                    barTouchData: BarTouchData(
+                      enabled: true,
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          final datasetLabel = datasets[rodIndex].label ?? '';
+                          return BarTooltipItem(
+                            '$datasetLabel: ${rod.toY.toStringAsFixed(2)}h',
+                            const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
                             ),
                           );
-                        }
-                        return const Text('');
-                      },
-                      reservedSize: 40,
+                        },
+                      ),
                     ),
-                  ),
-                  leftTitles: AxisTitles(
-                    sideTitles: SideTitles(
-                      showTitles: true,
-                      getTitlesWidget: (value, meta) {
-                        return Text(
-                          '${value.toInt()}h',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey,
-                          ),
-                        );
-                      },
-                      reservedSize: 40,
+                    titlesData: FlTitlesData(
+                      show: true,
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final index = value.toInt();
+                            if (index >= 0 && index < labels.length) {
+                              return Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  _formatLabelForDisplay(
+                                    labels[index],
+                                    labels.length,
+                                  ),
+                                  style: const TextStyle(
+                                    fontSize: 10,
+                                    color: Colors.grey,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                              );
+                            }
+                            return const Text('');
+                          },
+                          reservedSize: 40,
+                        ),
+                      ),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            return Text(
+                              '${value.toInt()}h',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey,
+                              ),
+                            );
+                          },
+                          reservedSize: 40,
+                        ),
+                      ),
+                      topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
+                      rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false),
+                      ),
                     ),
+                    gridData: const FlGridData(show: true),
+                    borderData: FlBorderData(
+                      show: true,
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    barGroups: _buildBarGroups(labels, datasets),
                   ),
-                  topTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                  rightTitles: const AxisTitles(
-                    sideTitles: SideTitles(showTitles: false),
-                  ),
-                ),
-                gridData: const FlGridData(show: true),
-                borderData: FlBorderData(
-                  show: true,
-                  border: Border.all(color: Colors.grey[300]!),
-                ),
-                barGroups: _buildBarGroups(labels, datasets),
-              ),
+                );
+              },
             ),
           ),
           const SizedBox(height: 10),
@@ -303,33 +353,46 @@ class _BarChartAttendanceState extends State<BarChartAttendance> {
       final actualWorkHour = datasets[0].data?[index] ?? 0;
       final expectedWorkHour = datasets[1].data?[index] ?? 0;
 
+      // Apply animation only to actual work hour
+      final animatedActualWorkHour =
+          actualWorkHour.toDouble() * _animation.value;
+      final staticExpectedWorkHour = expectedWorkHour.toDouble();
+
       // Determine which value is shorter
-      final isActualShorter = actualWorkHour <= expectedWorkHour;
-      final shorterValue = isActualShorter ? actualWorkHour : expectedWorkHour;
-      final longerValue = isActualShorter ? expectedWorkHour : actualWorkHour;
+      final isActualShorter = animatedActualWorkHour <= staticExpectedWorkHour;
+      final shorterValue = isActualShorter
+          ? animatedActualWorkHour
+          : staticExpectedWorkHour;
+      final longerValue = isActualShorter
+          ? staticExpectedWorkHour
+          : animatedActualWorkHour;
 
       return BarChartGroupData(
         x: index,
         groupVertically: true,
         barRods: [
-          // Longer bar first (goes to back)
+          // Longer bar first (goes to back) - Expected Work Hour (no animation)
           BarChartRodData(
-            toY: longerValue.toDouble(),
+            toY: longerValue,
             color: isActualShorter
                 ? _barChartColors[1] // Expected - lighter when behind
-                : _barChartColors[0], // Actual - lighter when behind
+                : _barChartColors[0].withOpacity(
+                    0.7,
+                  ), // Actual - lighter when behind
             width: 14, // Wider bar for background
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(4),
               topRight: Radius.circular(4),
             ),
           ),
-          // Shorter bar second (comes to front)
+          // Shorter bar second (comes to front) - Actual Work Hour (animated)
           BarChartRodData(
-            toY: shorterValue.toDouble(),
+            toY: shorterValue,
             color: isActualShorter
                 ? _barChartColors[0] // Actual - solid color when in front
-                : _barChartColors[1], // Expected - solid color when in front
+                : _barChartColors[1].withOpacity(
+                    0.7,
+                  ), // Expected - lighter when in front
             width: 8, // Narrower bar for foreground
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(4),
