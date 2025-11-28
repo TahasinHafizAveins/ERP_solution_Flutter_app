@@ -34,12 +34,12 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
   ];
 
   static const List<Color> _fixedColors = [
-    Color(0xFF2ECC71),
-    Color(0xFFFFA726),
-    Color(0xFFEF5350),
-    Color(0xFF42A5F5),
-    Color(0xFF9C27B0),
-    Color(0xFF26A69A),
+    Color(0xFF2ECC71), // On Time
+    Color(0xFFFFA726), // Late
+    Color(0xFFEF5350), // Absent
+    Color(0xFF42A5F5), // Leave
+    Color(0xFF9C27B0), // Holiday & Weekend
+    Color(0xFF26A69A), // Partial Entry
   ];
 
   @override
@@ -54,6 +54,7 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
         ?.datasets?[widget.selectedDuration]?[0];
 
     final apiLabels = widget.attendanceResult?.mainChart?.labels ?? <String>[];
+
     final rawValues = dataset?.data ?? <dynamic>[];
 
     final Map<String, double> apiMap = {};
@@ -63,65 +64,61 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
       apiMap[key] = _toDoubleSafe(raw);
     }
 
-    final List<double> counts = List<double>.generate(_fixedLabels.length, (i) {
-      final String target = _fixedLabels[i].toLowerCase();
-      final List<String> keywords = _keywordsForIndex(i);
+    final List<double> counts = List.generate(_fixedLabels.length, (i) {
+      final target = _fixedLabels[i].toLowerCase();
+      final keywords = _keywordsForIndex(i);
 
       for (final apiLabel in apiMap.keys) {
-        final apiLower = apiLabel.toLowerCase();
+        final lower = apiLabel.toLowerCase();
         for (final kw in keywords) {
-          if (apiLower.contains(kw)) {
-            return apiMap[apiLabel]!;
-          }
+          if (lower.contains(kw)) return apiMap[apiLabel] ?? 0.0;
         }
       }
 
-      for (final apiLabel in apiMap.keys) {
-        if (apiLabel.toLowerCase() == target) return apiMap[apiLabel]!;
-      }
-
-      return 0.0;
+      return apiMap[target] ?? 0.0;
     });
+
+    // Max-day rule
+    double maxDays = widget.selectedDuration == "LW"
+        ? 5
+        : widget.selectedDuration == "L2W"
+        ? 10
+        : 22; // L1M
 
     return Column(
       children: [
-        // -------- ARC CHART --------
-        Center(
-          child: SizedBox(
-            width: widget.scWidth,
-            height: widget.scWidth * 0.45, // FIXED for 80% gauge visibility
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                CustomPaint(
-                  painter: _StackedArcPainter(
-                    counts: counts,
-                    colors: _fixedColors,
-                    strokeWidth: widget.scWidth * 0.09 / 10,
-                    gap: widget.scWidth * 0.009,
+        SizedBox(
+          width: widget.scWidth,
+          height: widget.scWidth * 0.45, // Full circle space
+          child: CustomPaint(
+            painter: StackedProgressArcPainter(
+              values: counts,
+              maxValue: maxDays,
+              colors: _fixedColors,
+              strokeWidth: widget.scWidth * 0.0095,
+              gap: widget.scWidth * 0.008,
+            ),
+            child: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // const Text(
+                  //   "Total Analytics",
+                  //   style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
+                  // ),
+                  const SizedBox(height: 40),
+                  Text(
+                    _centerSubtitle(widget.selectedDuration),
+                    style: const TextStyle(fontSize: 13, color: Colors.grey),
                   ),
-                  size: Size(widget.scWidth, widget.scWidth * 0.9),
-                ),
-
-                /// TEXT INSIDE THE 80% CIRCLE
-                Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const SizedBox(height: 50),
-                    Text(
-                      _centerSubtitle(widget.selectedDuration),
-                      style: const TextStyle(fontSize: 13, color: Colors.grey),
-                    ),
-                  ],
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
 
         const SizedBox(height: 14),
 
-        // -------- LEGEND --------
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: Wrap(
@@ -132,7 +129,6 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
               final label = _fixedLabels[i];
               final color = _fixedColors[i];
               final value = counts[i].toInt();
-              final displayCount = value.toString().padLeft(2, '0');
 
               return Row(
                 mainAxisSize: MainAxisSize.min,
@@ -147,7 +143,7 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    "$displayCount $label",
+                    "${value.toString().padLeft(2, '0')} $label",
                     style: const TextStyle(
                       fontSize: 12,
                       color: Colors.grey,
@@ -167,25 +163,24 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
     if (v == null) return 0.0;
     if (v is double) return v;
     if (v is int) return v.toDouble();
-    if (v is String) return double.tryParse(v.replaceAll(',', '')) ?? 0.0;
-    if (v is num) return v.toDouble();
+    if (v is String) return double.tryParse(v) ?? 0.0;
     return 0.0;
   }
 
   static List<String> _keywordsForIndex(int idx) {
     switch (idx) {
       case 0:
-        return ['on time', 'ontime', 'on-time', 'on_time', 'present'];
+        return ['on time', 'ontime', 'on-time'];
       case 1:
-        return ['late', 'delay'];
+        return ['late'];
       case 2:
         return ['absent', 'abs'];
       case 3:
-        return ['leave', 'leaves'];
+        return ['leave'];
       case 4:
         return ['holiday', 'weekend'];
       case 5:
-        return ['partial', 'partial entry'];
+        return ['partial'];
       default:
         return [];
     }
@@ -205,14 +200,16 @@ class _PieChartAttendanceState extends State<PieChartAttendance> {
   }
 }
 
-class _StackedArcPainter extends CustomPainter {
-  final List<double> counts;
+class StackedProgressArcPainter extends CustomPainter {
+  final List<double> values;
+  final double maxValue;
   final List<Color> colors;
   final double strokeWidth;
   final double gap;
 
-  _StackedArcPainter({
-    required this.counts,
+  StackedProgressArcPainter({
+    required this.values,
+    required this.maxValue,
     required this.colors,
     required this.strokeWidth,
     required this.gap,
@@ -220,48 +217,40 @@ class _StackedArcPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final double total = counts.fold(0.0, (a, b) => a + b);
+    final Offset center = Offset(size.width / 2, size.height / 2);
 
-    // Center lowered so the whole circle stays visible
-    final Offset center = Offset(size.width / 2, size.height * 0.55);
+    final double baseRadius = size.width * 0.40;
 
-    // Base radius fits inside the paint box
-    final double baseRadius = size.width * 0.38;
-
-    // 80% circle = 1.6π (~288 degrees)
-    const double arcSweep = 1.6 * pi;
-
-    // Center the arc visually
+    const double arcSweep = 1.6 * pi; // 80% circle
     const double startAngle = -pi / 2 - (arcSweep / 2);
 
-    for (int i = 0; i < counts.length; i++) {
-      final double r = baseRadius - (i * (strokeWidth + gap));
+    for (int i = 0; i < values.length; i++) {
+      final r = baseRadius - (i * (strokeWidth + gap));
       if (r <= 0) continue;
 
       final rect = Rect.fromCircle(center: center, radius: r);
 
-      // Background track
-      final bgPaint = Paint()
+      final bg = Paint()
+        ..color = Colors.grey.withOpacity(0.12)
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round
-        ..color = Colors.grey.withOpacity(0.12);
+        ..strokeCap = StrokeCap.round;
 
-      canvas.drawArc(rect, startAngle, arcSweep, false, bgPaint);
+      canvas.drawArc(rect, startAngle, arcSweep, false, bg);
 
-      // Foreground arc
-      final double sweep = (total == 0) ? 0 : (counts[i] / total) * arcSweep;
+      final percent = (values[i] / maxValue).clamp(0.0, 1.0);
+      final sweep = arcSweep * percent;
 
-      final fgPaint = Paint()
+      final fg = Paint()
+        ..color = colors[i]
         ..style = PaintingStyle.stroke
         ..strokeWidth = strokeWidth
-        ..strokeCap = StrokeCap.round
-        ..color = colors[i];
+        ..strokeCap = StrokeCap.round;
 
-      canvas.drawArc(rect, startAngle, sweep, false, fgPaint);
+      canvas.drawArc(rect, startAngle, sweep, false, fg);
     }
   }
 
   @override
-  bool shouldRepaint(covariant _StackedArcPainter oldDelegate) => true;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

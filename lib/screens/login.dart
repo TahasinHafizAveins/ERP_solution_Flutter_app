@@ -60,7 +60,7 @@ class _LoginState extends State<Login> {
                           ),
                           SizedBox(height: 10),
                           Text(
-                            "Welcome to Nagad",
+                            "Welcome to Nagad People & Culture",
                             style: TextStyle(color: Colors.white, fontSize: 18),
                           ),
                         ],
