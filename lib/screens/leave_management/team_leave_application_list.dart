@@ -1,22 +1,20 @@
 import 'package:erp_solution/models/leave_application_list_model.dart';
 import 'package:erp_solution/provider/leave_management_provider.dart';
-import 'package:erp_solution/screens/leave_management/apply_leave_application.dart';
 import 'package:erp_solution/screens/leave_management/leave_application_details.dart';
-import 'package:erp_solution/screens/leave_management/self_leave_application_card.dart';
-import 'package:erp_solution/screens/shimmer_screens/self_leave_list_shimmer.dart';
+import 'package:erp_solution/screens/leave_management/team_leave_application_card.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shimmer/shimmer.dart';
 
-class SelfLeaveApplicationList extends StatefulWidget {
-  const SelfLeaveApplicationList({super.key});
+class TeamLeaveApplicationList extends StatefulWidget {
+  const TeamLeaveApplicationList({super.key});
 
   @override
-  State<SelfLeaveApplicationList> createState() =>
-      _SelfLeaveApplicationListState();
+  State<TeamLeaveApplicationList> createState() =>
+      _TeamLeaveApplicationListState();
 }
 
-class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
+class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
   String? _selectedFilter; // 'Pending', 'Approved', 'Rejected', or null for all
 
   @override
@@ -27,18 +25,11 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
         context,
         listen: false,
       );
-      if (provider.leaveApplications.isEmpty && !provider.isLoading) {
-        provider.loadSelfLeaveApplicationList();
+      if (provider.teamLeaveApplications.isEmpty &&
+          !provider.isTeamLeaveLoading) {
+        provider.loadTeamLeaveApplicationList();
       }
     });
-  }
-
-  void _onApplyLeavePressed() {
-    // Navigate to apply leave screen
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (_) => ApplyLeaveApplication()),
-    );
   }
 
   // Helper method to filter applications for current year
@@ -48,11 +39,9 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
     final currentYear = DateTime.now().year;
     return applications.where((application) {
       try {
-        // Try to parse from createdDate first
         final createdDate = DateTime.parse(application.createdDate!);
         return createdDate.year == currentYear;
       } catch (e) {
-        // Fallback: try to parse from leave dates if createdDate fails
         try {
           final leaveDateParts = application.leaveDates!.split(' - ').first;
           final leaveDate = _parseDateString(leaveDateParts);
@@ -78,7 +67,6 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
 
   DateTime? _parseDateString(String dateString) {
     try {
-      // Handle formats like "06 Nov 2025", "13 Oct 2025"
       final parts = dateString.split(' ');
       if (parts.length == 3) {
         final day = int.parse(parts[0]);
@@ -127,7 +115,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
-          'My Leave Applications',
+          'Team Leave Applications',
           style: TextStyle(
             fontWeight: FontWeight.w700,
             fontSize: 22,
@@ -165,36 +153,23 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
         ),
         child: Consumer<LeaveManagementProvider>(
           builder: (context, provider, child) {
-            if (provider.isLoading) {
+            if (provider.isTeamLeaveLoading) {
               return _buildLoadingState();
             }
 
-            if (provider.error != null) {
-              return _buildErrorState(provider.error!, provider);
+            if (provider.teamLeaveError != null) {
+              return _buildErrorState(provider.teamLeaveError!, provider);
             }
 
-            final applications = provider.leaveApplications;
+            final applications = provider.teamLeaveApplications;
             final filteredApplications = _getFilteredApplications(applications);
 
-            // Only show full empty state when there are NO applications at all
-            if (applications.isEmpty) {
-              return _buildEmptyState(provider);
+            if (filteredApplications.isEmpty) {
+              return _buildEmptyState(provider, _selectedFilter);
             }
 
             return _buildLeaveList(filteredApplications, applications);
           },
-        ),
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _onApplyLeavePressed,
-        backgroundColor: Colors.red.shade700,
-        foregroundColor: Colors.white,
-        elevation: 8,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        icon: const Icon(Icons.add, size: 24),
-        label: const Text(
-          'Apply Leave',
-          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
         ),
       ),
     );
@@ -223,22 +198,140 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
                   ),
                 ],
               ),
-              height: 120,
+              height: 100,
             ),
           ),
 
-          // Shimmer Leave Cards
+          // Shimmer Team Leave Cards
           Expanded(
             child: ListView.separated(
               padding: const EdgeInsets.only(bottom: 16),
-              itemCount: 6, // Show 6 shimmer cards
+              itemCount: 6,
               separatorBuilder: (context, index) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
-                return SelfLeaveListShimmer();
+                return _buildShimmerCard();
               },
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildShimmerCard() {
+    return Shimmer.fromColors(
+      baseColor: Colors.grey.shade300,
+      highlightColor: Colors.grey.shade100,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.08),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              // Shimmer Profile Image
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.grey.shade300,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 16),
+
+              // Shimmer Content
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // First Row: Employee Name and Status
+                    Row(
+                      children: [
+                        // Shimmer Employee Name
+                        Container(
+                          height: 18,
+                          width: 150,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        const Spacer(),
+                        // Shimmer Status Badge
+                        Container(
+                          height: 28,
+                          width: 80,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Second Row: Leave Type
+                    Container(
+                      height: 16,
+                      width: 120,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Third Row: Date
+                    Row(
+                      children: [
+                        // Shimmer Calendar Icon
+                        Container(
+                          width: 16,
+                          height: 16,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(4),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        // Shimmer Date Text
+                        Container(
+                          height: 16,
+                          width: 180,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+
+                    // Fourth Row: Duration
+                    Container(
+                      height: 28,
+                      width: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -272,7 +365,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
             ),
             const SizedBox(height: 20),
             ElevatedButton(
-              onPressed: () => provider.loadSelfLeaveApplicationList(),
+              onPressed: () => provider.loadTeamLeaveApplicationList(),
               style: ElevatedButton.styleFrom(
                 backgroundColor: Colors.red.shade700,
                 foregroundColor: Colors.white,
@@ -295,7 +388,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
     );
   }
 
-  Widget _buildEmptyState(LeaveManagementProvider provider) {
+  Widget _buildEmptyState(LeaveManagementProvider provider, String? filter) {
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(20.0),
@@ -310,14 +403,18 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.beach_access_rounded,
+                filter == null
+                    ? Icons.people_alt_rounded
+                    : Icons.search_off_rounded,
                 size: 60,
                 color: Colors.red.shade700,
               ),
             ),
             const SizedBox(height: 24),
             Text(
-              'No Leave Applications',
+              filter == null
+                  ? 'No Team Leave Applications'
+                  : 'No $filter Leaves Found',
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -326,7 +423,9 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
             ),
             const SizedBox(height: 12),
             Text(
-              'You haven\'t applied for any leaves yet.\nTap the button below to apply for your first leave.',
+              filter == null
+                  ? 'Your team hasn\'t applied for any leaves yet.'
+                  : 'There are no $filter leaves in your team.',
               style: TextStyle(
                 fontSize: 16,
                 color: Colors.grey.shade600,
@@ -334,26 +433,24 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
               ),
               textAlign: TextAlign.center,
             ),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _onApplyLeavePressed,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.red.shade700,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
+            if (filter != null) ...[
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: () => _handleFilterClick(null),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red.shade700,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                elevation: 4,
+                child: const Text('Show All Leaves'),
               ),
-              child: const Text(
-                'Apply Your First Leave',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-              ),
-            ),
+            ],
           ],
         ),
       ),
@@ -371,7 +468,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
 
     return Column(
       children: [
-        // Header with current year stats
+        // Header with current year stats (3 items only)
         Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(20),
@@ -404,7 +501,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
                   const SizedBox(width: 8),
                   Text(
                     _selectedFilter == null
-                        ? 'Leave Summary - $currentYear'
+                        ? 'Team Leave Summary - $currentYear'
                         : 'Showing: $_selectedFilter Leaves',
                     style: TextStyle(
                       fontSize: 14,
@@ -418,13 +515,6 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildStatItem(
-                    'Total',
-                    currentYearApplications.length.toString(),
-                    Icons.list_alt_rounded,
-                    isSelected: _selectedFilter == null,
-                    onTap: () => _handleFilterClick(null),
-                  ),
                   _buildStatItem(
                     'Pending',
                     currentYearApplications
@@ -461,77 +551,33 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
           ),
         ),
 
-        // Leave List - Show empty message within list view if filtered results are empty
+        // Team Leave List
         Expanded(
-          child: filteredApplications.isEmpty
-              ? _buildEmptyFilteredState()
-              : ListView.separated(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  itemCount: filteredApplications.length,
-                  separatorBuilder: (context, index) =>
-                      const SizedBox(height: 12),
-                  itemBuilder: (context, index) {
-                    final application = filteredApplications[index];
-                    return Card(
-                      elevation: 4,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: InkWell(
-                        onTap: () {
-                          _onLeaveItemTap(application);
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: SelfLeaveApplicationCard(
-                          application: application,
-                        ),
-                      ),
-                    );
-                  },
+          child: ListView.separated(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            itemCount: filteredApplications.length,
+            separatorBuilder: (context, index) => const SizedBox(height: 12),
+            itemBuilder: (context, index) {
+              final leave_application = filteredApplications[index];
+              return Card(
+                elevation: 4,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
                 ),
+                child: InkWell(
+                  onTap: () {
+                    _onLeaveItemTap(leave_application);
+                  },
+                  borderRadius: BorderRadius.circular(20),
+                  child: TeamLeaveApplicationCard(
+                    application: leave_application,
+                  ),
+                ),
+              );
+            },
+          ),
         ),
       ],
-    );
-  }
-
-  Widget _buildEmptyFilteredState() {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.search_off_rounded, size: 80, color: Colors.grey.shade400),
-          const SizedBox(height: 16),
-          Text(
-            'No $_selectedFilter Leaves Found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey.shade700,
-            ),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'You don\'t have any $_selectedFilter leaves.',
-            style: TextStyle(fontSize: 14, color: Colors.grey.shade600),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () => _handleFilterClick(null),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red.shade700,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Show All Leaves'),
-          ),
-        ],
-      ),
     );
   }
 
@@ -564,7 +610,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
           const SizedBox(height: 8),
           Text(
             value,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
               color: Colors.white,
@@ -591,7 +637,7 @@ class _SelfLeaveApplicationListState extends State<SelfLeaveApplicationList> {
         builder: (_) => LeaveApplicationDetails(
           type: 1,
           ref: leaveApplication.employeeLeaveAID!,
-          originateFrom: "SelfLeaveApplication",
+          originateFrom: "TeamLeaveApplication",
         ),
       ),
     );

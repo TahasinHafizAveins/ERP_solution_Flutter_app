@@ -7,6 +7,7 @@ import 'package:erp_solution/screens/attendance/self_details.dart';
 import 'package:erp_solution/screens/attendance/user_attendence_summery.dart';
 import 'package:erp_solution/screens/employee_dir/employee_directory.dart';
 import 'package:erp_solution/screens/leave_management/self_leave_application_list.dart';
+import 'package:erp_solution/screens/leave_management/team_leave_application_list.dart';
 import 'package:erp_solution/screens/remote_attendance/remote_attendance.dart';
 import 'package:erp_solution/screens/shimmer_screens/attendance_shimmer.dart';
 import 'package:erp_solution/screens/team_attendance/team_mem_details.dart';
@@ -57,6 +58,9 @@ class _HomeState extends State<Home> {
       case 54: // Replace with other menu IDs as needed
         _openSelfLeaveApplicationList();
         break;
+      case 84: // Replace with other menu IDs as needed
+        _openTeamLeaveApplicationList();
+        break;
 
       default:
         // For unknown menu IDs, you can show a message or ignore
@@ -69,6 +73,13 @@ class _HomeState extends State<Home> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const SelfLeaveApplicationList()),
+    );
+  }
+
+  void _openTeamLeaveApplicationList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TeamLeaveApplicationList()),
     );
   }
 

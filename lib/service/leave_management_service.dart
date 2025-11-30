@@ -60,6 +60,55 @@ class LeaveManagementService {
     }
   }
 
+  Future<List<LeaveApplicationListModel>>
+  fetchTeamLeaveApplicationList() async {
+    try {
+      final response = await apiService.dio.post(
+        ApiEndPoints.allLeaveApplicationListApi,
+        data: {
+          'ServerPagination': true,
+          'Limit': 100,
+          'Offset': 0,
+          'Order': 'desc',
+          'SearchBy':
+              'EmployeeName\$EmployeeCode\$LeaveType\$LeaveDates\$ApprovalStatus',
+          'SearchType': '',
+          'Search': '\$\$\$\$',
+          'Sort': 'CreatedDate',
+          'SortName': '',
+          'SortOrder': '',
+          'ApprovalFilterData': 'All',
+        },
+      );
+
+      // Parse the response
+      final responseData = response.data;
+
+      // If response.data is already a Map, no need to decode
+      final result = responseData is String
+          ? json.decode(responseData)
+          : responseData;
+
+      final responseBody = result['Result']['parentDataSource'];
+
+      final List<dynamic> rows = responseBody['Rows'];
+
+      final applications = rows
+          .map<LeaveApplicationListModel>(
+            (json) => LeaveApplicationListModel.fromJson(json),
+          )
+          .toList();
+
+      return applications;
+    } on DioException catch (e) {
+      throw Exception(
+        "Fetch failed: ${e.response?.data ?? e.message ?? "Unknown error"}",
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<LeaveBalances>> fetchLeaveBalanceDetails(
     String leaveCategoryId,
     String startDate,
@@ -102,6 +151,22 @@ class LeaveManagementService {
       );
       final responseData = response.data['Result'];
       return Map<String, dynamic>.from(responseData);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<List<dynamic>> getLeaveApplicationDetails({
+    required int type,
+    required int ref,
+  }) async {
+    try {
+      final response = await apiService.dio.get(
+        "${ApiEndPoints.getApprovalList}?APTypeID=$type&ReferenceID=$ref",
+      );
+
+      final responseData = response.data['Result'] as List;
+      return responseData; // Return the list directly
     } catch (e) {
       rethrow;
     }

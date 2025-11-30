@@ -1,6 +1,7 @@
 import 'package:erp_solution/models/leave_balances_model.dart';
 import 'package:erp_solution/provider/leave_management_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 class ApplyLeaveApplication extends StatefulWidget {
@@ -22,7 +23,6 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
   List<String> _attachments = [];
   List<LeaveDay> _leaveDays = [];
   bool _isLeaveDaysExpanded = false;
-  bool _isLeaveBalanceExpanded = false;
 
   @override
   void initState() {
@@ -38,8 +38,8 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
       if (provider.leaveBalances.isEmpty && !provider.isBalanceLeaveLoading) {
         provider.loadLeaveBalanceDetails(
           '0',
-          getDateFormatForApi(nextDate),
-          getDateFormatForApi(nextDate),
+          getDateFormatForUI(nextDate),
+          getDateFormatForUI(nextDate),
         );
       }
       if (provider.backupEmp.isEmpty && !provider.isBackupEmpLoading) {
@@ -190,7 +190,7 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
 
       return {
         "ELADBDID": 0,
-        "Day": getDateFormatForApi(day.date),
+        "Day": getDateFormatForAPI2(day.date),
         "DayStatus": dayStatus,
         "DayDateTime": day.date.toIso8601String(),
         "IsCancel": false,
@@ -209,7 +209,7 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
     }).toList();
   }
 
-  void _submitApplication() {
+  Future<void> _submitApplication() async {
     if (_formKey.currentState!.validate()) {
       if (_selectedLeaveTypeId == null) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -244,10 +244,10 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
       // Prepare leave data for submission
       Map<String, dynamic> leaveData = {
         "EmployeeLeaveAID": 0,
-        "RequestStartDate": getDateFormatForApi(_startDate!),
-        "RequestEndDate": getDateFormatForApi(_endDate!),
-        "BackupEmployeeID": int.tryParse(_selectedBackupEmployeeId ?? '0') ?? 0,
-        "LeaveCategoryID": int.tryParse(_selectedLeaveTypeId ?? '0') ?? 0,
+        "RequestStartDate": getDateFormatForAPI(_startDate!),
+        "RequestEndDate": getDateFormatForAPI(_endDate!),
+        "BackupEmployeeID": _selectedBackupEmployeeId ?? '0',
+        "LeaveCategoryID": _selectedLeaveTypeId ?? '0',
         "Purpose": _purposeController.text,
         "LeaveLocation": _stayDuringLeave ?? "",
         "DateOfJoiningWork": "",
@@ -261,17 +261,41 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
         "LFADeclaration": {},
       };
 
-      print('Leave Application Submitted:');
-      print('Leave Data: $leaveData');
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Leave application submitted successfully!'),
-          backgroundColor: Colors.green.shade700,
-        ),
+      final leaveManagementProvider = Provider.of<LeaveManagementProvider>(
+        context,
+        listen: false,
       );
+      try {
+        bool isSuccess = await leaveManagementProvider.submitLeaveApplication(
+          leaveData,
+        );
 
-      Navigator.pop(context);
+        if (isSuccess) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Leave application submitted successfully!'),
+              backgroundColor: Colors.green.shade700,
+            ),
+          );
+          Navigator.pop(context);
+        } else {
+          String errorMessage =
+              leaveManagementProvider.submitLeaveError ?? "Submission failed";
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text("Error: $errorMessage"),
+              backgroundColor: Colors.red.shade700,
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text("Unexpected error: $e"),
+            backgroundColor: Colors.red.shade700,
+          ),
+        );
+      }
     }
   }
 
@@ -750,6 +774,7 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
                 }).toList(),
                 onChanged: (value) {
                   setState(() {
+                    print("EMPLOY ID: #####################   : $value");
                     _selectedBackupEmployeeId = value;
                   });
                 },
@@ -1687,8 +1712,16 @@ class _ApplyLeaveApplicationState extends State<ApplyLeaveApplication> {
     return days[weekday - 1];
   }
 
-  String getDateFormatForApi(DateTime date) {
+  String getDateFormatForUI(DateTime date) {
     return "${date.day.toString().padLeft(2, '0')}-${date.month.toString().padLeft(2, '0')}-${date.year}";
+  }
+
+  String getDateFormatForAPI(DateTime date) {
+    return "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+  }
+
+  String getDateFormatForAPI2(DateTime date) {
+    return DateFormat('dd MMM yyyy').format(date);
   }
 }
 
