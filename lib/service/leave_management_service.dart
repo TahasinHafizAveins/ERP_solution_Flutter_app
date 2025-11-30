@@ -156,6 +156,21 @@ class LeaveManagementService {
     }
   }
 
+  Future<Map<String, dynamic>> submitLeaveApproval(
+    Map<String, dynamic> leaveData,
+  ) async {
+    try {
+      final response = await apiService.dio.post(
+        ApiEndPoints.submitLeaveApproval,
+        data: leaveData,
+      );
+      final responseData = response.data['Result'];
+      return Map<String, dynamic>.from(responseData);
+    } catch (e) {
+      rethrow;
+    }
+  }
+
   Future<List<dynamic>> getLeaveApplicationDetails({
     required int type,
     required int ref,

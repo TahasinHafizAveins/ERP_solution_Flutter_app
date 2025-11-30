@@ -16,6 +16,7 @@ class LeaveManagementProvider with ChangeNotifier {
   bool _isSubmitLeaveLoading = false;
   bool _isTeamLeaveLoading = false;
   bool _isLeaveApplicationDetailsLoading = false;
+  bool _isSubmitting = false;
 
   String? _balanceLeaveError;
   String? _backupEmpError;
@@ -54,6 +55,15 @@ class LeaveManagementProvider with ChangeNotifier {
   List<RejectedMembers> get backupEmp => _backupEmp;
   Map<String, dynamic>? get submitLeaveData => _submitLeaveData;
   List<dynamic> get leaveApplicationDetails => _leaveApplicationDetails;
+
+  bool _isSubmitLeaveApprovalLoading = false;
+  String? _submitLeaveApprovalError;
+  Map<String, dynamic>? _submitLeaveApprovalData;
+
+  // Getters
+  bool get isSubmitLeaveApprovalLoading => _isSubmitLeaveApprovalLoading;
+  String? get submitLeaveApprovalError => _submitLeaveApprovalError;
+  Map<String, dynamic>? get submitLeaveApprovalData => _submitLeaveApprovalData;
 
   Future<void> loadSelfLeaveApplicationList() async {
     _isLoading = true;
@@ -179,6 +189,38 @@ class LeaveManagementProvider with ChangeNotifier {
       _leaveApplicationDetails = []; // Reset to empty list on error
     } finally {
       _isLeaveApplicationDetailsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> submitLeaveApproval(Map<String, dynamic> approvalData) async {
+    _isSubmitLeaveApprovalLoading = true;
+    _submitLeaveApprovalError = null;
+    _submitLeaveApprovalData = null;
+    notifyListeners();
+
+    try {
+      final response = await service.submitLeaveApproval(approvalData);
+
+      bool status = response['status'];
+      String message = response['message'];
+
+      if (status) {
+        _submitLeaveApprovalData = response;
+        return true; // Success
+      } else {
+        _submitLeaveApprovalData = null;
+        _submitLeaveApprovalError = message;
+        return false; // Failure
+      }
+    } catch (e) {
+      _isSubmitLeaveApprovalLoading = false;
+      _submitLeaveApprovalError = e.toString();
+      _submitLeaveApprovalData = null;
+      notifyListeners();
+      return false; // Failure
+    } finally {
+      _isSubmitLeaveApprovalLoading = false;
       notifyListeners();
     }
   }

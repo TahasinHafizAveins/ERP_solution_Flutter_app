@@ -14,6 +14,8 @@ import 'package:erp_solution/screens/team_attendance/team_mem_details.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../provider/notification_provider.dart';
+
 class Home extends StatefulWidget {
   const Home({super.key});
 
@@ -133,7 +135,10 @@ class _HomeState extends State<Home> {
     // TODO: implement initState
     super.initState();
 
-    Future.microtask(() => _fetchAttendanceSummery());
+    Future.microtask(() {
+      _fetchAttendanceSummery();
+      _loadNotifications();
+    });
   }
 
   @override
@@ -213,5 +218,10 @@ class _HomeState extends State<Home> {
     );
     provider.loadAttendanceSummery();
     provider.loadAttendanceBarChart();
+  }
+
+  Future<void> _loadNotifications() async {
+    final provider = Provider.of<NotificationProvider>(context, listen: false);
+    await provider.loadNotifications();
   }
 }

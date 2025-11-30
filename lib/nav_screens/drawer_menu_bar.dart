@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../provider/notification_provider.dart';
 import '../utils/api_end_points.dart';
 
 class DrawerMenuBar extends StatefulWidget {
@@ -218,6 +219,7 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
     final isExpanded = _expanded[menuId] ?? false;
     final isSelected = key == _selectedMenuKey;
 
+    final isNotificationMenu = menuId == 63;
     IconData iconData = Icons.circle;
 
     final header = AnimatedContainer(
@@ -322,6 +324,35 @@ class _DrawerMenuBarState extends State<DrawerMenuBar> {
                     color: isSelected ? Colors.white : Colors.grey.shade600,
                     size: 22,
                   ),
+                )
+              else if (isNotificationMenu)
+                // Show notification badge with count
+                Consumer<NotificationProvider>(
+                  builder: (context, notificationProvider, _) {
+                    final count = notificationProvider.unreadCount;
+                    if (count == 0) return const SizedBox.shrink();
+
+                    return Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isSelected ? Colors.white : Colors.red.shade700,
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Text(
+                        count > 99 ? '99+' : count.toString(),
+                        style: GoogleFonts.poppins(
+                          fontSize: 12,
+                          color: isSelected
+                              ? Colors.red.shade700
+                              : Colors.white,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    );
+                  },
                 )
               else if (menu.badge != null && menu.badge!.isNotEmpty)
                 Container(

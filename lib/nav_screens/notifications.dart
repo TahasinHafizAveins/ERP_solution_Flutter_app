@@ -1,8 +1,10 @@
+import 'package:erp_solution/models/notification_model.dart';
 import 'package:erp_solution/provider/notification_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
 
+import '../screens/leave_management/team_leave_application_list.dart';
 import '../screens/shimmer_screens/notification_shimmer.dart';
 
 class Notifications extends StatefulWidget {
@@ -93,6 +95,20 @@ class _NotificationsState extends State<Notifications> {
               ),
             ),
             centerTitle: true,
+            actions: [
+              Consumer<NotificationProvider>(
+                builder: (context, provider, _) {
+                  if (provider.unreadCount == 0) return const SizedBox.shrink();
+                  return IconButton(
+                    icon: const Icon(Icons.mark_email_read),
+                    onPressed: () {
+                      provider.markAllAsRead();
+                    },
+                    tooltip: 'Mark all as read',
+                  );
+                },
+              ),
+            ],
           ),
           body: Column(
             children: [
@@ -177,6 +193,7 @@ class _NotificationsState extends State<Notifications> {
                         itemCount: filterList.length,
                         itemBuilder: (context, index) {
                           final n = filterList[index];
+                          final isTappable = n.aPTypeID == 1;
                           return Container(
                             margin: const EdgeInsets.only(bottom: 10),
                             decoration: BoxDecoration(
@@ -191,6 +208,20 @@ class _NotificationsState extends State<Notifications> {
                               ],
                             ),
                             child: ListTile(
+                              onTap: isTappable
+                                  ? () {
+                                      // Mark notification as read when tapped
+                                      final provider =
+                                          Provider.of<NotificationProvider>(
+                                            context,
+                                            listen: false,
+                                          );
+                                      provider.markAsRead(n);
+
+                                      // Add your navigation logic for APTypeID == 1 here
+                                      _handleTappableNotification(n);
+                                    }
+                                  : null,
                               leading: CircleAvatar(
                                 backgroundColor: Colors.red.shade50,
                                 child: Icon(
@@ -258,6 +289,13 @@ class _NotificationsState extends State<Notifications> {
           const SizedBox(height: 16),
         ],
       ),
+    );
+  }
+
+  void _handleTappableNotification(NotificationModel notification) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const TeamLeaveApplicationList()),
     );
   }
 }

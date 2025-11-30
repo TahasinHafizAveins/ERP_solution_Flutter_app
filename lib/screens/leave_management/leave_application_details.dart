@@ -47,15 +47,15 @@ class _LeaveApplicationDetailsState extends State<LeaveApplicationDetails> {
     );
   }
 
-  void _handleApprove() {
-    _showCommentDialog('Approve', Colors.green);
+  void _handleApprove(List<dynamic> details) {
+    _showCommentDialog('Approve', Colors.green, details);
   }
 
-  void _handleReject() {
-    _showCommentDialog('Reject', Colors.red);
+  void _handleReject(List<dynamic> details) {
+    _showCommentDialog('Reject', Colors.red, details);
   }
 
-  void _showCommentDialog(String action, Color color) {
+  void _showCommentDialog(String action, Color color, List<dynamic> details) {
     _commentController.clear();
     bool isCommentValid = false;
 
@@ -146,7 +146,7 @@ class _LeaveApplicationDetailsState extends State<LeaveApplicationDetails> {
                     ? () {
                         final comment = _commentController.text.trim();
                         Navigator.pop(context);
-                        _callApproveRejectAPI(action, comment);
+                        _callApproveRejectAPI(action, comment, details);
                       }
                     : null,
                 style: ElevatedButton.styleFrom(
@@ -165,10 +165,67 @@ class _LeaveApplicationDetailsState extends State<LeaveApplicationDetails> {
     );
   }
 
-  void _callApproveRejectAPI(String action, String comment) {
-    // TODO: Implement API call for approve/reject with comment
-    print('API Call: $action with comment: $comment');
-    _showSuccessSnackbar(action, comment);
+  Future<void> _callApproveRejectAPI(
+    String action,
+    String comment,
+    List<dynamic> details,
+  ) async {
+    if (details.length > 1) {
+      final currentApprover = details[1];
+      final approvalProcessID = currentApprover['ApprovalProcessID'];
+      final apEmployeeFeedbackID = currentApprover['APEmployeeFeedbackID'];
+      final apFeedbackID = action == 'Approve'
+          ? 5
+          : 6; // 5 for Approve, 4 for Reject
+      final apTypeID = currentApprover['APTypeID'];
+      final referenceID = currentApprover['ReferenceID'];
+
+      final payload = {
+        "ApprovalProcessID": approvalProcessID,
+        "APEmployeeFeedbackID": apEmployeeFeedbackID,
+        "APFeedbackID": apFeedbackID,
+        "Remarks": comment,
+        "APTypeID": apTypeID,
+        "ReferenceID": referenceID,
+        "ToAPMemberFeedbackID": 0,
+        "APForwardInfoID": 0,
+      };
+
+      try {
+        final provider = Provider.of<LeaveManagementProvider>(
+          context,
+          listen: false,
+        );
+
+        final bool success = await provider.submitLeaveApproval(payload);
+
+        if (success) {
+          _showSuccessSnackbar(action, comment);
+
+          // Refresh the details data
+          setState(() {
+            _loadDataFuture = _loadData();
+          });
+        } else {
+          // Show error from provider
+          final error =
+              provider.submitLeaveApprovalError ?? 'Unknown error occurred';
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              backgroundColor: Colors.red,
+              content: Text('Failed to $action: $error'),
+            ),
+          );
+        }
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Failed to $action: $e'),
+          ),
+        );
+      }
+    }
   }
 
   void _showSuccessSnackbar(String action, String comment) {
@@ -804,7 +861,9 @@ class _LeaveApplicationDetailsState extends State<LeaveApplicationDetails> {
                   children: [
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _handleApprove,
+                        onPressed: () {
+                          _handleApprove(details);
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.green.shade600,
                           foregroundColor: Colors.white,
@@ -834,7 +893,9 @@ class _LeaveApplicationDetailsState extends State<LeaveApplicationDetails> {
                     const SizedBox(width: 12),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _handleReject,
+                        onPressed: () {
+                          _handleReject(details);
+                        },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                           foregroundColor: Colors.red.shade700,

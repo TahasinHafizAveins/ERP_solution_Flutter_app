@@ -640,6 +640,17 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
           originateFrom: "TeamLeaveApplication",
         ),
       ),
+    ).then((_) {
+      // This callback runs when returning from the details page
+      _refreshData();
+    });
+  }
+
+  void _refreshData() {
+    final provider = Provider.of<LeaveManagementProvider>(
+      context,
+      listen: false,
     );
+    provider.loadTeamLeaveApplicationList(); // Refresh the list
   }
 }

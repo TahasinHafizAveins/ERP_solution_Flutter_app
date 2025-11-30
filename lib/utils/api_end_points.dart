@@ -44,6 +44,8 @@ class ApiEndPoints {
 
   static const String submitLeaveApplication =
       "/HRMS/Leave/CreateLeaveApplication";
+  static const String submitLeaveApproval =
+      "/Approval/ApprovalRequest/ApprovalSubmission";
   static const String getApprovalList = "/Approval/APView/GetAPViews";
   static const String getLeaveBalanceDetails =
       "/HRMS/Leave/GetLeaveBalanceAndDetails/";
