@@ -15,7 +15,8 @@ class TeamLeaveApplicationList extends StatefulWidget {
 }
 
 class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
-  String? _selectedFilter; // 'Pending', 'Approved', 'Rejected', or null for all
+  String?
+  _selectedFilter; // 'Pending', 'Approved', 'Rejected', 'MyPending', or null for all
 
   @override
   void initState() {
@@ -59,10 +60,20 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
   ) {
     if (_selectedFilter == null) {
       return applications; // Show all applications
+    } else if (_selectedFilter == 'MyPending') {
+      // Filter for My Pending - items where APEmployeeFeedbackID != 0
+      return applications
+          .where(
+            (application) =>
+                application.approvalStatus == 'Pending' &&
+                (application.apEmployeeFeedbackID ?? 0) != 0,
+          )
+          .toList();
+    } else {
+      return applications
+          .where((application) => application.approvalStatus == _selectedFilter)
+          .toList();
     }
-    return applications
-        .where((application) => application.approvalStatus == _selectedFilter)
-        .toList();
   }
 
   DateTime? _parseDateString(String dateString) {
@@ -414,6 +425,8 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
             Text(
               filter == null
                   ? 'No Team Leave Applications'
+                  : filter == 'MyPending'
+                  ? 'No My Pending Leaves'
                   : 'No $filter Leaves Found',
               style: TextStyle(
                 fontSize: 22,
@@ -425,6 +438,8 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
             Text(
               filter == null
                   ? 'Your team hasn\'t applied for any leaves yet.'
+                  : filter == 'MyPending'
+                  ? 'You don\'t have any pending leaves requiring your feedback.'
                   : 'There are no $filter leaves in your team.',
               style: TextStyle(
                 fontSize: 16,
@@ -466,9 +481,18 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
     );
     final currentYear = DateTime.now().year;
 
+    // Calculate My Pending count
+    final myPendingCount = currentYearApplications
+        .where(
+          (application) =>
+              application.approvalStatus == 'Pending' &&
+              (application.apEmployeeFeedbackID ?? 0) != 0,
+        )
+        .length;
+
     return Column(
       children: [
-        // Header with current year stats (3 items only)
+        // Header with current year stats (4 items now)
         Container(
           margin: const EdgeInsets.all(16),
           padding: const EdgeInsets.all(20),
@@ -502,6 +526,8 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
                   Text(
                     _selectedFilter == null
                         ? 'Team Leave Summary - $currentYear'
+                        : _selectedFilter == 'MyPending'
+                        ? 'Showing: My Pending Leaves'
                         : 'Showing: $_selectedFilter Leaves',
                     style: TextStyle(
                       fontSize: 14,
@@ -515,6 +541,13 @@ class _TeamLeaveApplicationListState extends State<TeamLeaveApplicationList> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
+                  _buildStatItem(
+                    'My Pending',
+                    myPendingCount.toString(),
+                    Icons.person_pin_rounded,
+                    isSelected: _selectedFilter == 'MyPending',
+                    onTap: () => _handleFilterClick('MyPending'),
+                  ),
                   _buildStatItem(
                     'Pending',
                     currentYearApplications

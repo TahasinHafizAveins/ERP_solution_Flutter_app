@@ -22,15 +22,17 @@ class BarChartAttendance extends StatefulWidget {
 
 class _BarChartAttendanceState extends State<BarChartAttendance>
     with SingleTickerProviderStateMixin {
-  // New color scheme for bar chart
+  // Updated color scheme for bar chart with third color
   final List<Color> _barChartColors = [
     const Color(0xFF4CAF50), // Green for Actual Work Hour
     const Color(0xFFFF9800), // Orange for Expected Work Hour
+    const Color(0xFF2196F3), // Blue for Average Work Hour (NEW COLOR ADDED)
   ];
 
   final List<Color> _barChartHoverColors = [
     const Color(0xFF66BB6A), // Light Green
     const Color(0xFFFFB74D), // Light Orange
+    const Color(0xFF64B5F6), // Light Blue (NEW COLOR ADDED)
   ];
 
   late AnimationController _animationController;
@@ -99,7 +101,7 @@ class _BarChartAttendanceState extends State<BarChartAttendance>
             child: Text(
               "${widget.attendanceBarChartModel?.title} - ${_getBarChartRange()}",
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 14,
                 fontWeight: FontWeight.bold,
                 color: Colors.brown[900],
               ),
@@ -258,6 +260,7 @@ class _BarChartAttendanceState extends State<BarChartAttendance>
               Icons.timelapse,
               _barChartColors[1],
             ),
+          _buildAverageWorkHourItem(),
         ],
       ),
     );
@@ -305,6 +308,79 @@ class _BarChartAttendanceState extends State<BarChartAttendance>
         ),
       ),
     );
+  }
+
+  Widget _buildAverageWorkHourItem() {
+    // Calculate average work hours per day based on selected duration
+    double averageWorkHours = _calculateAverageWorkHours();
+
+    return Expanded(
+      child: Card(
+        elevation: 2,
+        child: Padding(
+          padding: const EdgeInsets.all(12.0),
+          child: Column(
+            children: [
+              Icon(Icons.av_timer, size: 24, color: _barChartColors[2]),
+              const SizedBox(height: 8),
+              Text(
+                '${averageWorkHours.toStringAsFixed(2)}h',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: _barChartColors[2],
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Avg/Day',
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: Colors.grey,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  double _calculateAverageWorkHours() {
+    // Get the bar chart data for the selected duration
+    final barData = _getBarChartData();
+
+    if (barData == null) return 0;
+
+    final datasets = barData.datasets ?? [];
+    if (datasets.isEmpty || datasets[0].data == null) return 0;
+
+    // Get total work hours for the selected duration
+    double totalWorkHours = 0;
+    if (widget.selectedDuration == "LW") {
+      totalWorkHours =
+          widget.attendanceBarChartModel?.footerLeft?.count?.tW ?? 0;
+    } else if (widget.selectedDuration == "L2W") {
+      totalWorkHours =
+          widget.attendanceBarChartModel?.footerLeft?.count?.l2W ?? 0;
+    } else if (widget.selectedDuration == "L1M") {
+      totalWorkHours =
+          widget.attendanceBarChartModel?.footerLeft?.count?.l1M ?? 0;
+    }
+
+    // Calculate number of actual working days (days with non-zero work hours)
+    final workHoursData = datasets[0].data!;
+    int numberOfDays = workHoursData.where((hours) => hours > 0).length;
+
+    // If no days with work hours, use total number of days in the dataset
+    if (numberOfDays == 0) {
+      numberOfDays = workHoursData.length;
+    }
+
+    // Calculate average (avoid division by zero)
+    return numberOfDays > 0 ? totalWorkHours / numberOfDays : 0;
   }
 
   // Helper methods for bar chart

@@ -8,6 +8,7 @@ class LeaveApplicationListModel {
   String? approvalStatus;
   int? approvalStatusID;
   int? approvalProcessID;
+  int? apEmployeeFeedbackID;
   String? createdDate;
   String? leaveType;
   String? employeeCode;
@@ -28,6 +29,7 @@ class LeaveApplicationListModel {
     this.approvalStatus,
     this.approvalStatusID,
     this.approvalProcessID,
+    this.apEmployeeFeedbackID,
     this.createdDate,
     this.leaveType,
     this.employeeCode,
@@ -49,6 +51,7 @@ class LeaveApplicationListModel {
     approvalStatus = json['ApprovalStatus'];
     approvalStatusID = json['ApprovalStatusID'];
     approvalProcessID = json['ApprovalProcessID'];
+    apEmployeeFeedbackID = json['APEmployeeFeedbackID'];
     createdDate = json['CreatedDate'];
     leaveType = json['LeaveType'];
     employeeCode = json['EmployeeCode'];
@@ -70,6 +73,7 @@ class LeaveApplicationListModel {
     data['ApprovalStatus'] = approvalStatus;
     data['ApprovalStatusID'] = approvalStatusID;
     data['ApprovalProcessID'] = approvalProcessID;
+    data['APEmployeeFeedbackID'] = apEmployeeFeedbackID;
     data['CreatedDate'] = createdDate;
     data['LeaveType'] = leaveType;
     data['EmployeeCode'] = employeeCode;
