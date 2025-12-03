@@ -51,8 +51,8 @@ class NotificationService {
   static Future<void> _createNotificationChannel() async {
     const AndroidNotificationChannel channel = AndroidNotificationChannel(
       'erp_channel',
-      'Nagad People & Culture',
-      description: 'Notifications for Nagad People & Culture',
+      'People & Culture',
+      description: 'Notifications for People & Culture',
       importance: Importance.high,
     );
 
@@ -69,8 +69,8 @@ class NotificationService {
       const AndroidNotificationDetails androidDetails =
           AndroidNotificationDetails(
             'erp_channel',
-            'Nagad People & Culture',
-            channelDescription: 'Notifications for Nagad People & Culture',
+            'People & Culture',
+            channelDescription: 'Notifications for People & Culture',
             importance: Importance.high,
             showWhen: true,
           );

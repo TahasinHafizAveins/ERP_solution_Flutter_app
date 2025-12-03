@@ -107,7 +107,7 @@ class SignalRNotificationService {
       print('📨 Raw notification data: $raw');
       print('🔍 Data type: ${raw.runtimeType}');
 
-      String title = "Nagad People & Culture";
+      String title = "People & Culture";
       String body = "";
 
       if (raw is String) {
@@ -124,10 +124,7 @@ class SignalRNotificationService {
       NotificationService.show(title, body);
     } catch (e) {
       print('❌ Error handling notification: $e');
-      NotificationService.show(
-        "Nagad People & Culture",
-        "New notification received",
-      );
+      NotificationService.show("People & Culture", "New notification received");
     }
   }
 
