@@ -1,3 +1,4 @@
+import 'package:erp_solution/utils/api_end_points.dart';
 import 'package:signalr_core/signalr_core.dart';
 
 import 'notification_service.dart';
@@ -40,7 +41,7 @@ class SignalRNotificationService {
 
       _connection = HubConnectionBuilder()
           .withUrl(
-            "https://nagaderp.mynagad.com:7070/HRMS/hubs/notification",
+            "${ApiEndPoints.base}/HRMS/hubs/notification",
             HttpConnectionOptions(
               accessTokenFactory: () async => token,
               logging: (level, message) => print('SignalR: $message'),

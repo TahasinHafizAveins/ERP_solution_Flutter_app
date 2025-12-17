@@ -7,6 +7,9 @@ import 'package:erp_solution/models/self_leave_application_details_model.dart';
 import 'package:erp_solution/service/api_service.dart';
 import 'package:erp_solution/utils/api_end_points.dart';
 
+import '../models/bulk_approva_iItem_model.dart';
+import '../models/pending_bulk_leave_application_model.dart';
+
 class LeaveManagementService {
   final ApiService apiService;
   LeaveManagementService(this.apiService);
@@ -182,6 +185,73 @@ class LeaveManagementService {
 
       final responseData = response.data['Result'] as List;
       return responseData; // Return the list directly
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Fetch pending leave applications for bulk approval
+  Future<List<PendingLeaveApplication>> fetchPendingLeaveApplications() async {
+    try {
+      final response = await apiService.dio.post(
+        ApiEndPoints.getAllPendingLeaveList,
+        data: {
+          'ServerPagination': true,
+          'Limit': 1000, // Increased limit for bulk operations
+          'Offset': 0,
+          'Order': 'desc',
+          'SearchBy': 'EmployeeName\$EmployeeCode\$LeaveCategory\$LeaveDates',
+          'SearchType': '',
+          'Search': '\$\$\$\$', // Empty search
+          'Sort': 'CreatedDate',
+          'SortName': '',
+          'SortOrder': '',
+        },
+      );
+
+      final responseData = response.data;
+      final result = responseData is String
+          ? json.decode(responseData)
+          : responseData;
+
+      if (result['Result'] == null ||
+          result['Result']['parentDataSource'] == null) {
+        throw Exception('Invalid response format');
+      }
+
+      final parentDataSource = result['Result']['parentDataSource'];
+      final pendingResponse = PendingLeaveApplicationResponse.fromJson(
+        parentDataSource,
+      );
+
+      return pendingResponse.rows;
+    } on DioException catch (e) {
+      throw Exception(
+        "Fetch pending applications failed: ${e.response?.data ?? e.message ?? "Unknown error"}",
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // Bulk approval/rejection
+  Future<Map<String, dynamic>> submitBulkLeaveApproval(
+    BulkApprovalPayload payload,
+  ) async {
+    try {
+      final response = await apiService.dio.post(
+        ApiEndPoints.submitBulkLeaveApproval,
+        data: payload.toJson(),
+      );
+
+      final responseData = response.data['Result'];
+      return Map<String, dynamic>.from(responseData);
+    } on DioException catch (e) {
+      final errorData = e.response?.data;
+      if (errorData != null) {
+        throw Exception(errorData['Message'] ?? e.message);
+      }
+      rethrow;
     } catch (e) {
       rethrow;
     }

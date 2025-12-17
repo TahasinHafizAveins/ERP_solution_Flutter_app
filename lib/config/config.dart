@@ -1,7 +1,9 @@
 import 'package:logger/logger.dart';
 
+import '../utils/api_end_points.dart';
+
 class Config {
-  static const String baseUrl = "https://nagaderp.mynagad.com:7070";
+  static const String baseUrl = ApiEndPoints.base;
   static const int timeout = 120;
   static const String loginUrl = "/Security/User/SignInWithMenus";
 }

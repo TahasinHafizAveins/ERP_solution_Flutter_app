@@ -1,7 +1,9 @@
 import 'package:erp_solution/models/leave_application_list_model.dart';
+import 'package:erp_solution/models/pending_bulk_leave_application_model.dart';
 import 'package:erp_solution/service/leave_management_service.dart';
 import 'package:flutter/material.dart';
 
+import '../models/bulk_approva_iItem_model.dart';
 import '../models/leave_balances_model.dart';
 import '../models/self_leave_application_details_model.dart';
 
@@ -16,7 +18,8 @@ class LeaveManagementProvider with ChangeNotifier {
   bool _isSubmitLeaveLoading = false;
   bool _isTeamLeaveLoading = false;
   bool _isLeaveApplicationDetailsLoading = false;
-  bool _isSubmitting = false;
+  bool _isBulkApprovalLoading = false;
+  bool _isPendingApplicationsLoading = false;
 
   String? _balanceLeaveError;
   String? _backupEmpError;
@@ -24,6 +27,8 @@ class LeaveManagementProvider with ChangeNotifier {
   String? _submitLeaveError;
   String? _teamLeaveError;
   String? _leaveApplicationDetailsError;
+  String? _bulkApprovalError;
+  String? _pendingApplicationsError;
 
   List<LeaveApplicationListModel> _leaveApplicationList = [];
   List<LeaveApplicationListModel> _teamleaveApplicationList = [];
@@ -31,6 +36,8 @@ class LeaveManagementProvider with ChangeNotifier {
   List<RejectedMembers> _backupEmp = [];
   Map<String, dynamic>? _submitLeaveData = {};
   List<dynamic> _leaveApplicationDetails = [];
+  Map<String, dynamic>? _bulkApprovalData;
+  List<PendingLeaveApplication> _pendingApplications = [];
 
   bool get isLoading => _isLoading;
   bool get isBalanceLeaveLoading => _isBalaceLeaveLoading;
@@ -39,6 +46,8 @@ class LeaveManagementProvider with ChangeNotifier {
   bool get isTeamLeaveLoading => _isTeamLeaveLoading;
   bool get isLeaveApplicationDetailsLoading =>
       _isLeaveApplicationDetailsLoading;
+  bool get isBulkApprovalLoading => _isBulkApprovalLoading;
+  bool get isPendingApplicationsLoading => _isPendingApplicationsLoading;
 
   String? get error => _error;
   String? get balanceLeaveError => _balanceLeaveError;
@@ -46,6 +55,8 @@ class LeaveManagementProvider with ChangeNotifier {
   String? get submitLeaveError => _submitLeaveError;
   String? get teamLeaveError => _teamLeaveError;
   String? get leaveApplicationDetailsError => _leaveApplicationDetailsError;
+  String? get bulkApprovalError => _bulkApprovalError;
+  String? get pendingApplicationsError => _pendingApplicationsError;
 
   List<LeaveApplicationListModel> get leaveApplications =>
       _leaveApplicationList;
@@ -55,6 +66,8 @@ class LeaveManagementProvider with ChangeNotifier {
   List<RejectedMembers> get backupEmp => _backupEmp;
   Map<String, dynamic>? get submitLeaveData => _submitLeaveData;
   List<dynamic> get leaveApplicationDetails => _leaveApplicationDetails;
+  Map<String, dynamic>? get bulkApprovalData => _bulkApprovalData;
+  List<PendingLeaveApplication> get pendingApplications => _pendingApplications;
 
   bool _isSubmitLeaveApprovalLoading = false;
   String? _submitLeaveApprovalError;
@@ -221,6 +234,56 @@ class LeaveManagementProvider with ChangeNotifier {
       return false; // Failure
     } finally {
       _isSubmitLeaveApprovalLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Fetch pending applications for bulk approval
+  Future<void> loadPendingApplications() async {
+    _isPendingApplicationsLoading = true;
+    _pendingApplicationsError = null;
+    _pendingApplications = [];
+    notifyListeners();
+
+    try {
+      _pendingApplications = await service.fetchPendingLeaveApplications();
+    } catch (e) {
+      _pendingApplicationsError = e.toString();
+    } finally {
+      _isPendingApplicationsLoading = false;
+      notifyListeners();
+    }
+  }
+
+  // Submit bulk approval/rejection
+  Future<bool> submitBulkLeaveApproval(BulkApprovalPayload payload) async {
+    _isBulkApprovalLoading = true;
+    _bulkApprovalError = null;
+    _bulkApprovalData = null;
+    notifyListeners();
+
+    try {
+      final response = await service.submitBulkLeaveApproval(payload);
+
+      bool status = response['status'] ?? false;
+      String message = response['message'] ?? '';
+
+      if (status) {
+        _bulkApprovalData = response;
+        return true;
+      } else {
+        _bulkApprovalData = null;
+        _bulkApprovalError = message;
+        return false;
+      }
+    } catch (e) {
+      _isBulkApprovalLoading = false;
+      _bulkApprovalError = e.toString();
+      _bulkApprovalData = null;
+      notifyListeners();
+      return false;
+    } finally {
+      _isBulkApprovalLoading = false;
       notifyListeners();
     }
   }

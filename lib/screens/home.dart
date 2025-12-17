@@ -6,8 +6,8 @@ import 'package:erp_solution/provider/attendance_summery_provider.dart';
 import 'package:erp_solution/screens/attendance/self_details.dart';
 import 'package:erp_solution/screens/attendance/user_attendence_summery.dart';
 import 'package:erp_solution/screens/employee_dir/employee_directory.dart';
+import 'package:erp_solution/screens/leave_management/bulk_leave_approval.dart';
 import 'package:erp_solution/screens/leave_management/self_leave_application_list.dart';
-import 'package:erp_solution/screens/leave_management/team_leave_application_list.dart';
 import 'package:erp_solution/screens/remote_attendance/remote_attendance.dart';
 import 'package:erp_solution/screens/shimmer_screens/attendance_shimmer.dart';
 import 'package:erp_solution/screens/team_attendance/team_mem_details.dart';
@@ -15,6 +15,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../provider/notification_provider.dart';
+import 'leave_management/team_leave_application_list.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -63,6 +64,9 @@ class _HomeState extends State<Home> {
       case 84: // Replace with other menu IDs as needed
         _openTeamLeaveApplicationList();
         break;
+      case 279: // Replace with other menu IDs as needed
+        _openBulkLeaveApplicationList();
+        break;
 
       default:
         // For unknown menu IDs, you can show a message or ignore
@@ -82,6 +86,13 @@ class _HomeState extends State<Home> {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const TeamLeaveApplicationList()),
+    );
+  }
+
+  void _openBulkLeaveApplicationList() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const BulkLeaveApprovalPage()),
     );
   }
 

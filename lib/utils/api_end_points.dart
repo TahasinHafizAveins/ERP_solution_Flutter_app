@@ -1,5 +1,5 @@
 class ApiEndPoints {
-  static const String base = "https://nagaderp.mynagad.com:7070";
+  static const String base = "https://192.168.10.111:8080";
 
   ///Authentication & Menu for Sidebar Drawer
   static const String loginApi = "/Security/User/SignInWithMenus";
@@ -50,4 +50,8 @@ class ApiEndPoints {
   static const String getLeaveBalanceDetails =
       "/HRMS/Leave/GetLeaveBalanceAndDetails/";
   static const String getBackupEmp = "/HRMS/Combo/GetBackupEmployees";
+  static const String getAllPendingLeaveList =
+      "/HRMS/Leave/GetAllPendingLeaveApplicationList";
+  static const String submitBulkLeaveApproval =
+      "/Approval/ApprovalRequest/BulkApproveOrRejectLeaveApplication";
 }

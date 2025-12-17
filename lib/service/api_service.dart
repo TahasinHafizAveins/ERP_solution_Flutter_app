@@ -12,7 +12,7 @@ class ApiService {
 
   final Dio dio = Dio(
     BaseOptions(
-      baseUrl: "https://nagaderp.mynagad.com:7070",
+      baseUrl: ApiEndPoints.base,
       connectTimeout: const Duration(seconds: 30),
       receiveTimeout: const Duration(seconds: 30),
     ),

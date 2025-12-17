@@ -124,7 +124,7 @@ class _LoginState extends State<Login> {
                                               keyboardType:
                                                   TextInputType.emailAddress,
                                               decoration: InputDecoration(
-                                                labelText: "Email",
+                                                labelText: "User Name",
                                                 prefixIcon: Icon(Icons.email),
                                                 border: OutlineInputBorder(
                                                   borderRadius:

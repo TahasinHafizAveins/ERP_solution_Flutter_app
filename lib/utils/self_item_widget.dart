@@ -23,61 +23,132 @@ class SelfItemWidget extends StatelessWidget {
     final status = getValue("ATTENDANCE_STATUS");
     final date = getValue("Date");
     final day = getValue("Day");
+    final dayStatus = getValue("DAY_STATUS");
 
-    return Card(
-      elevation: 4.0,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+    // Get status color
+    final statusColor = ColorWidget.getStatusColor(status);
+
+    // Define status icon
+    IconData getStatusIcon() {
+      final lowerStatus = status.toLowerCase();
+      if (lowerStatus.contains("present") || lowerStatus.contains("on time")) {
+        return Icons.check_circle_rounded;
+      } else if (lowerStatus.contains("late")) {
+        return Icons.access_time_rounded;
+      } else if (lowerStatus.contains("absent")) {
+        return Icons.highlight_off_rounded;
+      } else if (lowerStatus.contains("leave") ||
+          lowerStatus.contains("holiday")) {
+        return Icons.beach_access_rounded;
+      }
+      return Icons.info_rounded;
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: statusColor.withOpacity(0.2), width: 1),
+      ),
       child: Column(
         children: [
           // 🔹 Header (status bar)
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 12),
+            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
             decoration: BoxDecoration(
-              color: ColorWidget.getStatusColor(status),
+              color: statusColor,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(8), // match card top radius
+                top: Radius.circular(20),
               ),
             ),
-            child: Center(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 0.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.center,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Row(
                   children: [
+                    Icon(getStatusIcon(), color: Colors.white, size: 20),
+                    const SizedBox(width: 10),
                     Text(
                       "$date ($day)",
-                      style: const TextStyle(color: Colors.white, fontSize: 14),
-                    ),
-                    SizedBox(width: 10),
-                    Text(
-                      status,
-                      style: TextStyle(color: Colors.white, fontSize: 18),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                   ],
                 ),
-              ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    status.toUpperCase(),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
 
           // 🔹 Body content
           Padding(
-            padding: const EdgeInsets.all(12.0),
+            padding: const EdgeInsets.all(16.0),
             child: Builder(
               builder: (context) {
-                if (status.toLowerCase() == "holiday") {
-                  //only show holiday reason
-                  return Center(
-                    child: SelfRowWidget(
-                      label: "Holiday Reason",
-                      value: getValue("DAY_STATUS"),
-                    ),
+                if (status.toLowerCase() == "holiday" ||
+                    dayStatus.toLowerCase().contains("holiday")) {
+                  // Show holiday reason
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.celebration_rounded,
+                        color: Colors.orange.shade600,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              "Holiday",
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey.shade700,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              dayStatus,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.orange.shade700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   );
                 } else {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: Column(
@@ -86,15 +157,24 @@ class SelfItemWidget extends StatelessWidget {
                             SelfRowWidget(
                               label: "In Time",
                               value: getValue("OfficeInTime"),
+                              icon: Icons.login_rounded,
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             SelfRowWidget(
                               label: "Work Hour",
                               value: getValue("WORK_HOUR"),
+                              icon: Icons.timer_rounded,
                             ),
                           ],
                         ),
                       ),
+                      const SizedBox(width: 16),
+                      Container(
+                        width: 1,
+                        height: 80,
+                        color: Colors.grey.shade300,
+                      ),
+                      const SizedBox(width: 16),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -102,11 +182,13 @@ class SelfItemWidget extends StatelessWidget {
                             SelfRowWidget(
                               label: "Out Time",
                               value: getValue("OfficeOutTime"),
+                              icon: Icons.logout_rounded,
                             ),
-                            SizedBox(height: 8),
+                            const SizedBox(height: 12),
                             SelfRowWidget(
                               label: "Day Status",
-                              value: getValue("DAY_STATUS"),
+                              value: dayStatus,
+                              icon: Icons.info_outline_rounded,
                             ),
                           ],
                         ),
