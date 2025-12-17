@@ -84,12 +84,14 @@ flutter:
     - assets/logo_bg_white.png
     - assets/logo.png
     - assets/app_icon.png
+    - assets/nagad_people_culture.png
+    - assets/nagad_people_culture.jpeg
     - assets/app_icon.jpeg
 
 flutter_launcher_icons:
     android: true
     ios: true
-    image_path: "assets/app_icon.png"
+    image_path: "assets/app_icon.jpeg"
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
 

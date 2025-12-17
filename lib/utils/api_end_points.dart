@@ -1,5 +1,6 @@
 class ApiEndPoints {
-  static const String base = "https://192.168.10.111:8080";
+  //static const String base = "https://192.168.10.111:8080";
+  static const String base = "https://nagaderp.mynagad.com:7070";
 
   ///Authentication & Menu for Sidebar Drawer
   static const String loginApi = "/Security/User/SignInWithMenus";

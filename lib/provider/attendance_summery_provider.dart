@@ -49,4 +49,14 @@ class AttendanceSummeryProvider with ChangeNotifier {
       notifyListeners();
     }
   }
+
+  void clearData() {
+    _summery = null;
+    _barChart = null;
+    _isLoading = false;
+    _isBarLoading = false;
+    _error = null;
+    _barError = null;
+    notifyListeners();
+  }
 }

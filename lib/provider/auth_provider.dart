@@ -29,14 +29,19 @@ class AuthProvider with ChangeNotifier {
       final savedUser = await UserStorageService().loadUser();
 
       if (token != null && token.isNotEmpty) {
-        //  check JWT expiration
+        // Check JWT expiration
         if (JWTDecoder.isValid(token)) {
           _user = savedUser;
           // Update ApiService with the loaded token
           _authService.apiService.setToken(token);
+          print("User initialized with valid token");
         } else {
-          await logout();
+          // Token is expired on app start
+          print("Token expired on app start");
+          await forceLogout();
         }
+      } else {
+        print("No token found on app start");
       }
 
       _initialized = true;
@@ -65,14 +70,26 @@ class AuthProvider with ChangeNotifier {
     }
   }
 
-  // Logout method
+  // Logout method (user initiated)
   Future<void> logout() async {
+    print("Logging out user");
     _user = null;
     _initialized = false;
     await TokenService().clearToken();
     await UserStorageService().clearUser();
-    _authService.apiService.accessToken = null;
-    _authService.apiService.refreshToken = null;
+    _authService.apiService.clearToken();
+
+    notifyListeners();
+  }
+
+  // Force logout (for token expiration - doesn't clear stored token as it's already cleared)
+  Future<void> forceLogout() async {
+    print("Force logging out due to token expiration");
+    _user = null;
+    _initialized = false;
+    _authService.apiService.clearToken();
+
+    // Don't clear token from storage here as it's already cleared by ApiService
     notifyListeners();
   }
 }

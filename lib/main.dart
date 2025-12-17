@@ -12,6 +12,7 @@ import 'package:erp_solution/screens/login.dart';
 import 'package:erp_solution/screens/team_attendance/selected_member_details.dart';
 import 'package:erp_solution/service/api_service.dart';
 import 'package:erp_solution/service/attendance_summery_service.dart';
+import 'package:erp_solution/service/auth_event_service.dart';
 import 'package:erp_solution/service/auth_service.dart';
 import 'package:erp_solution/service/employee_dir_service.dart';
 import 'package:erp_solution/service/leave_management_service.dart';
@@ -28,6 +29,8 @@ final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final apiService = ApiService();
+
+  // Initialize API service
   await apiService.init();
 
   // Initialize notifications
@@ -75,15 +78,94 @@ void main() async {
   );
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  bool _isHandlingTokenExpired = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for token expiration
+    AuthEventService().addTokenExpiredListener(_handleTokenExpired);
+  }
+
+  @override
+  void dispose() {
+    AuthEventService().removeTokenExpiredListener(_handleTokenExpired);
+    super.dispose();
+  }
+
+  void _handleTokenExpired() {
+    if (_isHandlingTokenExpired) return;
+
+    _isHandlingTokenExpired = true;
+    print("Handling token expiration...");
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      try {
+        final authProvider = context.read<AuthProvider>();
+
+        // Force logout in provider - this will trigger rebuild
+        await authProvider.forceLogout();
+
+        // Stop SignalR connection
+        SignalRNotificationService().stopConnection();
+
+        // Clear all providers that might have user-specific data
+        _clearAllProviders();
+
+        // Show session expired message
+        _showSessionExpiredMessage();
+      } catch (e) {
+        print("Error handling token expiration: $e");
+      } finally {
+        _isHandlingTokenExpired = false;
+      }
+    });
+  }
+
+  void _clearAllProviders() {
+    // Clear data from all providers that might contain user-specific data
+    try {
+      final context = navigatorKey.currentContext;
+      if (context != null) {
+        // Example: Clear attendance data
+        Provider.of<AttendanceSummeryProvider>(
+          context,
+          listen: false,
+        ).clearData();
+        Provider.of<NotificationProvider>(context, listen: false).clearData();
+        // Add other providers as needed
+      }
+    } catch (e) {
+      print("Error clearing providers: $e");
+    }
+  }
+
+  void _showSessionExpiredMessage() {
+    final context = navigatorKey.currentContext;
+    if (context != null && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Your session has expired. Please login again.'),
+          duration: Duration(seconds: 5),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: navigatorKey,
-      // Routes for navigation
       routes: {
         '/login': (context) => const Login(),
         '/home': (context) => const Home(),
@@ -91,7 +173,6 @@ class HomePage extends StatelessWidget {
         '/employee_details': (context) => const EmployeeDetails(),
         '/notifications': (context) => const Notifications(),
       },
-      // Initial screen: use Consumer to decide
       home: FutureBuilder(
         future: context.read<AuthProvider>().init(),
         builder: (context, snapshot) {
@@ -104,7 +185,6 @@ class HomePage extends StatelessWidget {
             builder: (context, auth, _) {
               if (auth.isLoggedIn) {
                 final token = auth.authToken ?? "";
-                // Using a boolean to prevent multiple connections
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   final signalRService = SignalRNotificationService();
                   if (!signalRService.isConnected &&
@@ -114,13 +194,11 @@ class HomePage extends StatelessWidget {
                 });
                 return const Home();
               } else {
-                // Stop SignalR when user logs out
                 WidgetsBinding.instance.addPostFrameCallback((_) {
                   SignalRNotificationService().stopConnection();
                 });
                 return const Login();
               }
-              //return const Home();
             },
           );
         },

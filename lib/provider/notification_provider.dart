@@ -111,4 +111,12 @@ class NotificationProvider with ChangeNotifier {
     _saveReadNotifications();
     notifyListeners();
   }
+
+  void clearData() {
+    _notifications = null;
+    _notificationTypes = null;
+    _isLoading = false;
+    _error = null;
+    notifyListeners();
+  }
 }
